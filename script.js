@@ -1,34 +1,81 @@
-async function loadPage(person) {
-    const response = await fetch(`/points/${person}`);
-    const data = await response.json();
+// API Base URL
+const baseUrl = 'https://familypoints.onrender.com';
 
-    document.getElementById("content").innerHTML = `
-        <h2>${person.toUpperCase()}: <span id="points">${data.points}</span> Points</h2>
-        <input type="number" id="amount" placeholder="Add/Remove Points">
-        <input type="text" id="reason" placeholder="Reason">
-        <button onclick="updatePoints('${person}', 1)">Add</button>
-        <button onclick="updatePoints('${person}', -1)">Remove</button>
-        <h3>History</h3>
-        <ul id="history">${data.history.map(entry => `<li>${entry}</li>`).join('')}</ul>
-    `;
-}
+// Initialize user data structure
+const points = {
+    dario: { points: 0, history: [] },
+    linda: { points: 0, history: [] },
+    walter: { points: 0, history: [] },
+};
 
-async function updatePoints(person, multiplier) {
-    const amount = document.getElementById("amount").value;
-    const reason = document.getElementById("reason").value;
-    
-    if (!amount || !reason) {
-        alert("Please enter an amount and a reason.");
-        return;
+// Function to load user data from the server
+async function loadUser(user) {
+    const response = await fetch(`${baseUrl}/get_points/${user}`);
+
+    if (response.ok) {
+        const userData = await response.json();
+
+        // Update the UI with the fetched data
+        document.getElementById('userName').innerText = `${user.charAt(0).toUpperCase() + user.slice(1)}'s Points`;
+        document.getElementById('currentPoints').innerText = `${userData.points} Points`;
+
+        const historyList = document.getElementById('history');
+        historyList.innerHTML = "";
+        userData.history.forEach(item => {
+            const historyItem = document.createElement('div');
+            historyItem.innerText = `${item.time} - ${item.points} Points (${item.reason})`;
+            historyList.appendChild(historyItem);
+        });
+
+        // Set up the "Update Points" button
+        document.getElementById('updatePointsBtn').onclick = function () {
+            updatePoints(user);
+        };
+    } else {
+        alert("Error loading user data. Please try again later.");
     }
-
-    const response = await fetch(`/update/${person}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: amount * multiplier, reason })
-    });
-
-    const data = await response.json();
-    document.getElementById("points").innerText = data.points;
-    document.getElementById("history").innerHTML = data.history.map(entry => `<li>${entry}</li>`).join('');
 }
+
+// Function to update points and add a reason to the history
+async function updatePoints(user) {
+    const pointChange = parseInt(document.getElementById('pointChange').value);
+    const reason = document.getElementById('reason').value;
+
+    if (!isNaN(pointChange) && reason.trim()) {
+        const time = new Date().toLocaleString();
+
+        // Prepare the data to be sent to the server
+        const data = {
+            points: pointChange,
+            reason: reason,
+            time: time
+        };
+
+        // Make a POST request to update the points on the server
+        const response = await fetch(`${baseUrl}/update_points/${user}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        });
+
+        if (response.ok) {
+            loadUser(user); // Reload the updated user data
+        } else {
+            alert("Error updating points. Please try again.");
+        }
+    } else {
+        alert("Please enter a valid number of points and a reason.");
+    }
+}
+
+// Function to handle button clicks and load the corresponding user data
+function handleButtonClick(user) {
+    loadUser(user);
+}
+
+// Add event listeners to buttons
+document.getElementById('dario').addEventListener('click', () => handleButtonClick('dario'));
+document.getElementById('linda').addEventListener('click', () => handleButtonClick('linda'));
+document.getElementById('walter').addEventListener('click', () => handleButtonClick('walter'));
