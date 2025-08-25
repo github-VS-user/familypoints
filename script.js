@@ -1,81 +1,77 @@
-// API Base URL
-const baseUrl = 'https://familypoints.onrender.com';
+import {
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+  arrayUnion
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
-// Initialize user data structure
-const points = {
-    dario: { points: 0, history: [] },
-    linda: { points: 0, history: [] },
-    walter: { points: 0, history: [] },
-};
-
-// Function to load user data from the server
+// Load user data
 async function loadUser(user) {
-    const response = await fetch(`${baseUrl}/get_points/${user}`);
+  const userRef = doc(window.db, "users", user);
+  const snapshot = await getDoc(userRef);
 
-    if (response.ok) {
-        const userData = await response.json();
+  if (snapshot.exists()) {
+    const data = snapshot.data();
 
-        // Update the UI with the fetched data
-        document.getElementById('userName').innerText = `${user.charAt(0).toUpperCase() + user.slice(1)}'s Points`;
-        document.getElementById('currentPoints').innerText = `${userData.points} Points`;
+    // Update UI
+    document.getElementById("userName").innerText =
+      `${user.charAt(0).toUpperCase() + user.slice(1)}'s Points`;
+    document.getElementById("currentPoints").innerText = `${data.points} Points`;
 
-        const historyList = document.getElementById('history');
-        historyList.innerHTML = "";
-        userData.history.forEach(item => {
-            const historyItem = document.createElement('div');
-            historyItem.innerText = `${item.time} - ${item.points} Points (${item.reason})`;
-            historyList.appendChild(historyItem);
-        });
+    const historyList = document.getElementById("history");
+    historyList.innerHTML = "";
+    data.history.forEach(item => {
+      const historyItem = document.createElement("li");
+      historyItem.innerText = `${item.time} - ${item.points} Points (${item.reason})`;
+      historyList.appendChild(historyItem);
+    });
 
-        // Set up the "Update Points" button
-        document.getElementById('updatePointsBtn').onclick = function () {
-            updatePoints(user);
-        };
-    } else {
-        alert("Error loading user data. Please try again later.");
-    }
-}
+    document.getElementById("updatePointsBtn").onclick = () => updatePoints(user);
 
-// Function to update points and add a reason to the history
-async function updatePoints(user) {
-    const pointChange = parseInt(document.getElementById('pointChange').value);
-    const reason = document.getElementById('reason').value;
-
-    if (!isNaN(pointChange) && reason.trim()) {
-        const time = new Date().toLocaleString();
-
-        // Prepare the data to be sent to the server
-        const data = {
-            points: pointChange,
-            reason: reason,
-            time: time
-        };
-
-        // Make a POST request to update the points on the server
-        const response = await fetch(`${baseUrl}/update_points/${user}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data),
-        });
-
-        if (response.ok) {
-            loadUser(user); // Reload the updated user data
-        } else {
-            alert("Error updating points. Please try again.");
-        }
-    } else {
-        alert("Please enter a valid number of points and a reason.");
-    }
-}
-
-// Function to handle button clicks and load the corresponding user data
-function handleButtonClick(user) {
+    // Show user section, hide default message
+    document.getElementById("userSection").style.display = "block";
+    document.getElementById("defaultMessage").style.display = "none";
+  } else {
+    // Create user document if missing
+    await setDoc(userRef, { points: 0, history: [] });
     loadUser(user);
+  }
 }
 
-// Add event listeners to buttons
-document.getElementById('dario').addEventListener('click', () => handleButtonClick('dario'));
-document.getElementById('linda').addEventListener('click', () => handleButtonClick('linda'));
-document.getElementById('walter').addEventListener('click', () => handleButtonClick('walter'));
+// Update points and add to history
+async function updatePoints(user) {
+  const pointChange = parseInt(document.getElementById("pointChange").value);
+  const reason = document.getElementById("reason").value;
+
+  if (!isNaN(pointChange) && reason.trim()) {
+    const userRef = doc(window.db, "users", user);
+    const snapshot = await getDoc(userRef);
+    if (!snapshot.exists()) return;
+
+    const data = snapshot.data();
+    const newPoints = data.points + pointChange;
+    const newHistoryItem = {
+      time: new Date().toLocaleString(),
+      points: pointChange,
+      reason: reason
+    };
+
+    await updateDoc(userRef, {
+      points: newPoints,
+      history: arrayUnion(newHistoryItem)
+    });
+
+    // Clear input fields
+    document.getElementById("pointChange").value = '';
+    document.getElementById("reason").value = '';
+
+    loadUser(user);
+  } else {
+    alert("Please enter a valid number of points and a reason.");
+  }
+}
+
+// Event listeners
+document.getElementById("dario").addEventListener("click", () => loadUser("dario"));
+document.getElementById("linda").addEventListener("click", () => loadUser("linda"));
