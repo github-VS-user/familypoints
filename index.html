@@ -1,21 +1,114 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Family Points</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Family Points</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #74ABE2, #5563DE);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    h1 {
+      margin-top: 20px;
+      font-size: 2.5rem;
+      font-weight: 700;
+    }
+
+    .buttons {
+      margin: 30px 0;
+      display: flex;
+      gap: 15px;
+    }
+
+    .buttons button {
+      background: #fff;
+      color: #5563DE;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+    }
+
+    .buttons button:hover {
+      background: #f0f0f0;
+      transform: scale(1.05);
+    }
+
+    #content {
+      background: #fff;
+      color: #333;
+      width: 100%;
+      max-width: 600px;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+      text-align: left;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
 </head>
 <body>
-    <h1>Family Points</h1>
-    <div class="buttons">
-        <button onclick="loadPage('dario')">Dario</button>
-        <button onclick="loadPage('linda')">Linda</button>
-        <button onclick="loadPage('walter')">Walter</button>
+  <h1>🌟 Family Points</h1>
+  <div class="buttons">
+    <button onclick="loadUser('dario')">Dario</button>
+    <button onclick="loadUser('linda')">Linda</button>
+  </div>
+
+  <div id="content">
+    <div id="userSection" style="display:none;">
+      <h2 id="userName"></h2>
+      <h3 id="currentPoints">0 Points</h3>
+
+      <input type="number" id="pointChange" placeholder="Change points (+/-)">
+      <textarea id="reason" placeholder="Reason"></textarea>
+      <button id="updatePointsBtn">Update Points</button>
+
+      <h3>History</h3>
+      <ul id="history" class="history-list"></ul>
     </div>
 
-    <div id="content"></div>
+    <p id="defaultMessage">Select a family member to view and update their points.</p>
+  </div>
 
-    <script src="script.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+    import { getFirestore } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCFCP4xAnisuqItayg63PDNBllERQt2KHc",
+      authDomain: "family-db25.firebaseapp.com",
+      projectId: "family-db25",
+      storageBucket: "family-db25.firebasestorage.app",
+      messagingSenderId: "581814557059",
+      appId: "1:581814557059:web:ebc024f6ba93e85c4efeb6",
+      measurementId: "G-E4P16CHQDK"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    window.db = db; // Make Firestore available globally
+  </script>
+
+  <script src="script.js"></script>
 </body>
 </html>
