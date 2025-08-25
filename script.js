@@ -1,10 +1,15 @@
 import {
+  getFirestore,
   doc,
   getDoc,
   setDoc,
   updateDoc,
   arrayUnion
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+// Initialize Firestore from the app exposed in index.html
+const db = getFirestore(window.app);
+window.db = db;
 
 let currentUser = null;
 
