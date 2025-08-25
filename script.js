@@ -6,8 +6,11 @@ import {
   arrayUnion
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
+let currentUser = null;
+
 // Load user data
 async function loadUser(user) {
+  currentUser = user;
   try {
     const userRef = doc(window.db, "users", user);
     const snapshot = await getDoc(userRef);
@@ -30,8 +33,6 @@ async function loadUser(user) {
         historyList.appendChild(historyItem);
       });
 
-      document.getElementById("updatePointsBtn").onclick = () => updatePoints(user);
-
       // Show user section, hide default message
       document.getElementById("userSection").style.display = "block";
       document.getElementById("defaultMessage").style.display = "none";
@@ -47,14 +48,15 @@ async function loadUser(user) {
 }
 
 // Update points and add to history
-async function updatePoints(user) {
+async function updatePoints() {
+  if (!currentUser) return;
   try {
     const pointChange = parseInt(document.getElementById("pointChange").value);
     const reasonSelect = document.getElementById("reason");
     const reason = reasonSelect.value;
 
     if (!isNaN(pointChange) && reason) {
-      const userRef = doc(window.db, "users", user);
+      const userRef = doc(window.db, "users", currentUser);
       const snapshot = await getDoc(userRef);
       if (!snapshot.exists()) return;
 
@@ -74,7 +76,7 @@ async function updatePoints(user) {
       // Clear point input field only
       document.getElementById("pointChange").value = '';
 
-      loadUser(user);
+      loadUser(currentUser);
     } else {
       alert("Please enter a valid number of points and select a reason.");
     }
@@ -84,6 +86,9 @@ async function updatePoints(user) {
   }
 }
 
-// Event listeners
+// Event listeners for user selection
 document.getElementById("dario").addEventListener("click", () => loadUser("dario"));
 document.getElementById("linda").addEventListener("click", () => loadUser("linda"));
+
+// Assign updatePoints button listener once
+document.getElementById("updatePointsBtn").addEventListener("click", updatePoints);
