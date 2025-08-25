@@ -42,9 +42,10 @@ async function loadUser(user) {
 // Update points and add to history
 async function updatePoints(user) {
   const pointChange = parseInt(document.getElementById("pointChange").value);
-  const reason = document.getElementById("reason").value;
+  const reasonSelect = document.getElementById("reason");
+  const reason = reasonSelect.value;
 
-  if (!isNaN(pointChange) && reason.trim()) {
+  if (!isNaN(pointChange) && reason) {
     const userRef = doc(window.db, "users", user);
     const snapshot = await getDoc(userRef);
     if (!snapshot.exists()) return;
@@ -62,13 +63,12 @@ async function updatePoints(user) {
       history: arrayUnion(newHistoryItem)
     });
 
-    // Clear input fields
+    // Clear point input field only
     document.getElementById("pointChange").value = '';
-    document.getElementById("reason").value = '';
 
     loadUser(user);
   } else {
-    alert("Please enter a valid number of points and a reason.");
+    alert("Please enter a valid number of points and select a reason.");
   }
 }
 
