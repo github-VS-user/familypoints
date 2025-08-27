@@ -76,55 +76,57 @@
 
   <div id="content">
     <div id="userSection" style="display:none;">
-  <h2 id="userName"></h2>
-  <h3 id="currentPoints">0 Points</h3>
+      <h2 id="userName"></h2>
+      <h3 id="currentPoints">0 Points</h3>
+      <h3>Points History</h3>
+      <ul id="history"></ul>
 
-  <!-- Daily Checklist -->
-  <h3>Daily Routine</h3>
-  <ul id="dailyChecklist">
-    <li><input type="checkbox" class="check-item" data-points="1"> Getting dressed in the morning</li>
-    <li><input type="checkbox" class="check-item" data-points="1"> Making the bed</li>
-    <li><input type="checkbox" class="check-item" data-points="1"> Always bringing out the plate after meals</li>
-    <li><input type="checkbox" class="check-item" data-points="1"> Brushing your teeth after breakfast and dinner</li>
-    <li><input type="checkbox" class="check-item" data-points="1"> Showering every other day and tidying up your bathrobe</li>
-    <li><input type="checkbox" class="check-item" data-points="1"> Charging your iPad and tidying folders for the next day</li>
-    <li><input type="checkbox" class="check-item" data-points="1"> Putting on your pajamas</li>
-    <li><input type="checkbox" class="check-item" data-points="1"> Putting dirty laundry in the hamper</li>
-    <li><input type="checkbox" class="check-item" data-points="1"> Laying out clothes for the next day</li>
-    <li><input type="checkbox" class="check-item" data-points="1"> Going to bed on time (reading + lights out)</li>
-    <li><input type="checkbox" class="check-item" data-points="1"> At the table: no singing/dancing/playing with hands, no feet on chairs</li>
-    <li><input type="checkbox" class="check-item" data-points="1"> Don't act like a parent</li>
-    <li><input type="checkbox" class="check-item" data-points="1"> Don't interrupt while others are talking</li>
-    <li><input type="checkbox" class="check-item" data-points="1"> Don't make mom repeat things</li>
-  </ul>
+      <!-- Daily Checklist -->
+      <h3>Daily Routine</h3>
+      <ul id="dailyChecklist">
+        <li><input type="checkbox" class="check-item" data-points="1"> Getting dressed in the morning</li>
+        <li><input type="checkbox" class="check-item" data-points="1"> Making the bed</li>
+        <li><input type="checkbox" class="check-item" data-points="1"> Always bringing out the plate after meals</li>
+        <li><input type="checkbox" class="check-item" data-points="1"> Brushing your teeth after breakfast and dinner</li>
+        <li><input type="checkbox" class="check-item" data-points="1"> Showering every other day and tidying up your bathrobe</li>
+        <li><input type="checkbox" class="check-item" data-points="1"> Charging your iPad and tidying folders for the next day</li>
+        <li><input type="checkbox" class="check-item" data-points="1"> Putting on your pajamas</li>
+        <li><input type="checkbox" class="check-item" data-points="1"> Putting dirty laundry in the hamper</li>
+        <li><input type="checkbox" class="check-item" data-points="1"> Laying out clothes for the next day</li>
+        <li><input type="checkbox" class="check-item" data-points="1"> Going to bed on time (reading + lights out)</li>
+        <li><input type="checkbox" class="check-item" data-points="1"> At the table: no singing/dancing/playing with hands, no feet on chairs</li>
+        <li><input type="checkbox" class="check-item" data-points="1"> Don't act like a parent</li>
+        <li><input type="checkbox" class="check-item" data-points="1"> Don't interrupt while others are talking</li>
+        <li><input type="checkbox" class="check-item" data-points="1"> Don't make mom repeat things</li>
+      </ul>
 
-  <!-- Rewarded Behaviors -->
-  <h3>Rewarded Behaviors</h3>
-  <div id="bonusButtons">
-    <button class="bonus-btn" data-points="5">Set the table (+5)</button>
-    <button class="bonus-btn" data-points="5">Hang out the washing (+5)</button>
-    <button class="bonus-btn" data-points="15">Take out Emy (+15)</button>
-    <button class="bonus-btn" data-points="5">Take out garbage (+5)</button>
-    <button class="bonus-btn" data-points="15">Clean rabbit area (+15)</button>
-    <button class="bonus-btn" data-points="15">Order drawers/closets (+15)</button>
-    <button class="bonus-btn" data-points="15">General cleaning (+15)</button>
-  </div>
+      <!-- Rewarded Behaviors -->
+      <h3>Rewarded Behaviors</h3>
+      <div id="bonusButtons">
+        <button class="bonus-btn" data-points="5">Set the table (+5)</button>
+        <button class="bonus-btn" data-points="5">Hang out the washing (+5)</button>
+        <button class="bonus-btn" data-points="15">Take out Emy (+15)</button>
+        <button class="bonus-btn" data-points="5">Take out garbage (+5)</button>
+        <button class="bonus-btn" data-points="15">Clean rabbit area (+15)</button>
+        <button class="bonus-btn" data-points="15">Order drawers/closets (+15)</button>
+        <button class="bonus-btn" data-points="15">General cleaning (+15)</button>
+      </div>
 
-  <!-- School Section -->
-  <h3>School</h3>
-  <ul id="schoolChecklist">
-    <li><input type="checkbox" class="school-item" data-points="-75"> Grade below minimum (4.5)</li>
-    <li><input type="checkbox" class="school-item" data-points="75"> Monthly average ≥ 5</li>
-    <li><input type="checkbox" class="school-item" data-points="150"> All subjects ≥ 5 at month end</li>
-  </ul>
+      <!-- School Section -->
+      <h3>School</h3>
+      <ul id="schoolChecklist">
+        <li><input type="checkbox" class="school-item" data-points="-75"> Grade below minimum (4.5)</li>
+        <li><input type="checkbox" class="school-item" data-points="75"> Monthly average ≥ 5</li>
+        <li><input type="checkbox" class="school-item" data-points="150"> All subjects ≥ 5 at month end</li>
+      </ul>
 
-  <!-- Weekly/Monthly Summary -->
-  <h3>Summary</h3>
-  <p id="weeklyTotal">Weekly Points: 0</p>
-  <p id="monthlyTotal">Monthly Points: 0</p>
-  <p id="moneyTotal">Money Equivalent: 0 CHF</p>
-</div>
-<p id="defaultMessage">Select a family member to view and update their points.</p>
+      <!-- Weekly/Monthly Summary -->
+      <h3>Summary</h3>
+      <p id="weeklyTotal">Weekly Points: 0</p>
+      <p id="monthlyTotal">Monthly Points: 0</p>
+      <p id="moneyTotal">Money Equivalent: 0 CHF</p>
+    </div>
+    <p id="defaultMessage">Select a family member to view and update their points.</p>
   </div>
 
   <script type="module">
