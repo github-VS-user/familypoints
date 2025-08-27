@@ -6,6 +6,92 @@
   <title>Family Points</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #74ABE2, #5563DE);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    h1 {
+      margin-top: 20px;
+      font-size: 2.5rem;
+      font-weight: 700;
+    }
+    .buttons {
+      margin: 30px 0;
+      display: flex;
+      gap: 15px;
+    }
+    .buttons button {
+      background: #fff;
+      color: #5563DE;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+    }
+    .buttons button:hover {
+      background: #f0f0f0;
+      transform: scale(1.05);
+    }
+    #content {
+      background: #fff;
+      color: #333;
+      width: 100%;
+      max-width: 600px;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+      text-align: left;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .collapse-btn {
+      background: #5563DE;
+      color: #fff;
+      border: none;
+      padding: 7px 16px;
+      border-radius: 7px;
+      font-size: 1rem;
+      font-weight: 500;
+      margin-bottom: 5px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .collapse-btn[aria-expanded="false"] {
+      background: #74ABE2;
+    }
+    .collapse-btn:focus {
+      outline: 2px solid #5563DE;
+    }
+    #history {
+      transition: max-height 0.2s ease, opacity 0.2s ease;
+      overflow: hidden;
+    }
+    #history.collapsed {
+      max-height: 0;
+      opacity: 0;
+      padding: 0;
+      margin: 0;
+    }
+    #history:not(.collapsed) {
+      max-height: 800px;
+      opacity: 1;
+    }
+  </style>
 </head>
 <body>
   <h1>🌟 Family Points</h1>
@@ -19,23 +105,23 @@
       <h2 id="userName"></h2>
       <h3 id="currentPoints">0 Points</h3>
 
-      <!-- Daily Checklist -->
+      <!-- Daily Checklist: now with unique IDs for each item -->
       <h3>Daily Routine</h3>
       <ul id="dailyChecklist">
-        <li><input type="checkbox" class="check-item" data-points="1"> Getting dressed in the morning</li>
-        <li><input type="checkbox" class="check-item" data-points="1"> Making the bed</li>
-        <li><input type="checkbox" class="check-item" data-points="1"> Always bringing out the plate after meals</li>
-        <li><input type="checkbox" class="check-item" data-points="1"> Brushing your teeth after breakfast and dinner</li>
-        <li><input type="checkbox" class="check-item" data-points="1"> Showering every other day and tidying up your bathrobe</li>
-        <li><input type="checkbox" class="check-item" data-points="1"> Charging your iPad and tidying folders for the next day</li>
-        <li><input type="checkbox" class="check-item" data-points="1"> Putting on your pajamas</li>
-        <li><input type="checkbox" class="check-item" data-points="1"> Putting dirty laundry in the hamper</li>
-        <li><input type="checkbox" class="check-item" data-points="1"> Laying out clothes for the next day</li>
-        <li><input type="checkbox" class="check-item" data-points="1"> Going to bed on time (reading + lights out)</li>
-        <li><input type="checkbox" class="check-item" data-points="1"> At the table: no singing/dancing/playing with hands, no feet on chairs</li>
-        <li><input type="checkbox" class="check-item" data-points="1"> Don't act like a parent</li>
-        <li><input type="checkbox" class="check-item" data-points="1"> Don't interrupt while others are talking</li>
-        <li><input type="checkbox" class="check-item" data-points="1"> Don't make mom repeat things</li>
+        <li><input type="checkbox" class="check-item" id="daily-dressed" data-points="1"> Getting dressed in the morning</li>
+        <li><input type="checkbox" class="check-item" id="daily-bed" data-points="1"> Making the bed</li>
+        <li><input type="checkbox" class="check-item" id="daily-plate" data-points="1"> Always bringing out the plate after meals</li>
+        <li><input type="checkbox" class="check-item" id="daily-teeth" data-points="1"> Brushing your teeth after breakfast and dinner</li>
+        <li><input type="checkbox" class="check-item" id="daily-shower" data-points="1"> Showering every other day and tidying up your bathrobe</li>
+        <li><input type="checkbox" class="check-item" id="daily-ipad" data-points="1"> Charging your iPad and tidying folders for the next day</li>
+        <li><input type="checkbox" class="check-item" id="daily-pajamas" data-points="1"> Putting on your pajamas</li>
+        <li><input type="checkbox" class="check-item" id="daily-laundry" data-points="1"> Putting dirty laundry in the hamper</li>
+        <li><input type="checkbox" class="check-item" id="daily-clothes" data-points="1"> Laying out clothes for the next day</li>
+        <li><input type="checkbox" class="check-item" id="daily-bedtime" data-points="1"> Going to bed on time (reading + lights out)</li>
+        <li><input type="checkbox" class="check-item" id="daily-table_manners" data-points="1"> At the table: no singing/dancing/playing with hands, no feet on chairs</li>
+        <li><input type="checkbox" class="check-item" id="daily-parent" data-points="1"> Don't act like a parent</li>
+        <li><input type="checkbox" class="check-item" id="daily-interrupt" data-points="1"> Don't interrupt while others are talking</li>
+        <li><input type="checkbox" class="check-item" id="daily-repeat" data-points="1"> Don't make mom repeat things</li>
       </ul>
 
       <!-- Rewarded Behaviors -->
@@ -72,9 +158,10 @@
     <p id="defaultMessage">Select a family member to view and update their points.</p>
   </div>
 
+  <!-- Firebase and main logic scripts -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-    import { getFirestore, doc, getDoc, setDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+    import { getFirestore } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCFCP4xAnisuqItayg63PDNBllERQt2KHc",
@@ -90,134 +177,11 @@
     const db = getFirestore(app);
     window.app = app;
     window.db = db;
-
-    let currentUser = null;
-
-    async function loadUser(user) {
-      currentUser = user;
-      try {
-        const userRef = doc(db, "users", user);
-        const snapshot = await getDoc(userRef);
-
-        const userNameElem = document.getElementById("userName");
-        const currentPointsElem = document.getElementById("currentPoints");
-        const historyList = document.getElementById("history");
-        const userSection = document.getElementById("userSection");
-        const defaultMessage = document.getElementById("defaultMessage");
-
-        if (!userNameElem || !currentPointsElem || !historyList || !userSection || !defaultMessage) {
-          console.error("Missing one or more required HTML elements.");
-          return;
-        }
-
-        let data;
-        if (snapshot.exists()) {
-          data = snapshot.data();
-        } else {
-          data = { points: 0, history: [], weeklyTotal: 0, monthlyTotal: 0 };
-          await setDoc(userRef, data);
-        }
-
-        userNameElem.innerText = `${user.charAt(0).toUpperCase() + user.slice(1)}'s Points`;
-        currentPointsElem.innerText = `${data.points || 0} Points`;
-
-        // Render history
-        historyList.innerHTML = "";
-        (data.history || []).slice().reverse().forEach(item => {
-          const li = document.createElement("li");
-          li.innerText = `${item.time} - ${item.points} Points (${item.reason})`;
-          historyList.appendChild(li);
-        });
-
-        userSection.style.display = "block";
-        defaultMessage.style.display = "none";
-
-        updateSummary(data);
-      } catch (error) {
-        console.error("Error loading user:", error);
-        alert("Failed to load user data. Check your internet connection.");
-      }
-    }
-
-    function updateSummary(data) {
-      const weeklyEl = document.getElementById("weeklyTotal");
-      const monthlyEl = document.getElementById("monthlyTotal");
-      const moneyEl = document.getElementById("moneyTotal");
-
-      if (weeklyEl) weeklyEl.innerText = `Weekly Points: ${data.weeklyTotal || 0}`;
-      if (monthlyEl) monthlyEl.innerText = `Monthly Points: ${data.monthlyTotal || 0}`;
-      if (moneyEl) moneyEl.innerText = `Money Equivalent: ${Math.floor((data.monthlyTotal || 0)/15)} CHF`;
-    }
-
-    async function addPoints(user, points, reason) {
-      if (!user) return;
-      try {
-        const userRef = doc(db, "users", user);
-        const snapshot = await getDoc(userRef);
-        const data = snapshot.exists() ? snapshot.data() : { points: 0, history: [] };
-
-        const newPoints = (data.points || 0) + points;
-        const newHistoryItem = { time: new Date().toLocaleString(), points, reason };
-
-        await updateDoc(userRef, {
-          points: newPoints,
-          history: arrayUnion(newHistoryItem)
-        });
-
-        document.getElementById("currentPoints").innerText = `${newPoints} Points`;
-        const historyList = document.getElementById("history");
-        if (historyList) {
-          const li = document.createElement("li");
-          li.innerText = `${newHistoryItem.time} - ${newHistoryItem.points} Points (${newHistoryItem.reason})`;
-          historyList.insertBefore(li, historyList.firstChild);
-        }
-
-        // Optionally update summary
-        const weeklyTotal = (data.weeklyTotal || 0) + points;
-        const monthlyTotal = (data.monthlyTotal || 0) + points;
-        updateSummary({ weeklyTotal, monthlyTotal });
-      } catch (error) {
-        console.error("Error updating points:", error);
-        alert("Failed to update points. Check your internet connection.");
-      }
-    }
-
+  </script>
+  <script type="module" src="script.js"></script>
+  <script>
+    // Collapsible History JS
     document.addEventListener("DOMContentLoaded", () => {
-      // Daily checklist
-      document.querySelectorAll(".check-item").forEach(cb => {
-        cb.addEventListener("change", async (e) => {
-          if (!currentUser) return;
-          const points = e.target.checked ? parseInt(e.target.dataset.points) : -parseInt(e.target.dataset.points);
-          const reason = e.target.nextSibling.textContent.trim();
-          await addPoints(currentUser, points, reason);
-        });
-      });
-
-      // Bonus buttons
-      document.querySelectorAll(".bonus-btn").forEach(btn => {
-        btn.addEventListener("click", async (e) => {
-          if (!currentUser) return;
-          const points = parseInt(btn.dataset.points);
-          const reason = btn.innerText.replace(/\(\+\d+\)/,'').trim();
-          await addPoints(currentUser, points, reason);
-        });
-      });
-
-      // School checklist
-      document.querySelectorAll(".school-item").forEach(cb => {
-        cb.addEventListener("change", async (e) => {
-          if (!currentUser) return;
-          const points = e.target.checked ? parseInt(e.target.dataset.points) : -parseInt(e.target.dataset.points);
-          const reason = e.target.nextSibling.textContent.trim();
-          await addPoints(currentUser, points, reason);
-        });
-      });
-
-      // User selection buttons
-      document.getElementById("dario").addEventListener("click", () => loadUser("dario"));
-      document.getElementById("linda").addEventListener("click", () => loadUser("linda"));
-
-      // History collapsible
       const btn = document.getElementById("toggleHistoryBtn");
       const history = document.getElementById("history");
       if (btn && history) {
