@@ -129,6 +129,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+    import { getFirestore } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCFCP4xAnisuqItayg63PDNBllERQt2KHc",
@@ -141,7 +142,9 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    window.app = app; // Expose app globally
+    const db = getFirestore(app);
+    window.app = app; // Expose Firebase app globally
+    window.db = db;   // Expose Firestore globally
   </script>
 
   <script type="module" src="script.js"></script>
