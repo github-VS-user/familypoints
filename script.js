@@ -7,7 +7,6 @@ import {
   arrayUnion
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
-// Initialize Firestore from the app exposed in index.html
 const db = getFirestore(window.app);
 window.db = db;
 
@@ -17,103 +16,100 @@ let currentUser = null;
 async function loadUser(user) {
   currentUser = user;
   try {
-    const userRef = doc(window.db, "users", user);
+    const userRef = doc(db, "users", user);
     const snapshot = await getDoc(userRef);
 
     if (snapshot.exists()) {
       const data = snapshot.data();
 
-      // Update UI
-      document.getElementById("userName").innerText =
-        `${user.charAt(0).toUpperCase() + user.slice(1)}'s Points`;
-      document.getElementById("currentPoints").innerText = `${data.points} Points`;
+      document.getElementById("userName").innerText = `${user.charAt(0).toUpperCase() + user.slice(1)}'s Points`;
+      document.getElementById("currentPoints").innerText = `${data.points || 0} Points`;
 
       const historyList = document.getElementById("history");
       historyList.innerHTML = "";
-
-      // Show newest history first
-      data.history.slice().reverse().forEach(item => {
-        const historyItem = document.createElement("li");
-        historyItem.innerText = `${item.time} - ${item.points} Points (${item.reason})`;
-        historyList.appendChild(historyItem);
+      (data.history || []).slice().reverse().forEach(item => {
+        const li = document.createElement("li");
+        li.innerText = `${item.time} - ${item.points} Points (${item.reason})`;
+        historyList.appendChild(li);
       });
 
-      // Show user section, hide default message
       document.getElementById("userSection").style.display = "block";
       document.getElementById("defaultMessage").style.display = "none";
+
+      updateSummary(data);
     } else {
-      // Create user document if missing
       await setDoc(userRef, { points: 0, history: [] });
       loadUser(user);
     }
   } catch (error) {
     console.error("Error loading user:", error);
-    alert("Failed to load user data. Please try again.");
+    alert("Failed to load user data.");
   }
 }
 
-// Update points and add to history
-async function updatePoints() {
-  if (!currentUser) return;
+// Update summary placeholders
+function updateSummary(data) {
+  const weekly = data.weeklyTotal || 0;
+  const monthly = data.monthlyTotal || 0;
+  const money = Math.floor((monthly / 15) * 1); // 1 CHF per 15 points
+  document.getElementById("weeklyTotal").innerText = `Weekly Points: ${weekly}`;
+  document.getElementById("monthlyTotal").innerText = `Monthly Points: ${monthly}`;
+  document.getElementById("moneyTotal").innerText = `Money Equivalent: ${money} CHF`;
+}
+
+// Handle daily checklist
+document.querySelectorAll(".check-item").forEach(cb => {
+  cb.addEventListener("change", async (e) => {
+    if (!currentUser) return;
+    const points = e.target.checked ? parseInt(e.target.dataset.points) : -parseInt(e.target.dataset.points);
+    const reason = e.target.nextSibling.textContent.trim();
+    await addPoints(currentUser, points, reason);
+  });
+});
+
+// Handle bonus buttons
+document.querySelectorAll(".bonus-btn").forEach(btn => {
+  btn.addEventListener("click", async (e) => {
+    if (!currentUser) return;
+    const points = parseInt(btn.dataset.points);
+    const reason = btn.innerText.replace(/\(\+\d+\)/,'').trim();
+    await addPoints(currentUser, points, reason);
+  });
+});
+
+// Handle school checkboxes
+document.querySelectorAll(".school-item").forEach(cb => {
+  cb.addEventListener("change", async (e) => {
+    if (!currentUser) return;
+    const points = e.target.checked ? parseInt(e.target.dataset.points) : -parseInt(e.target.dataset.points);
+    const reason = e.target.nextSibling.textContent.trim();
+    await addPoints(currentUser, points, reason);
+  });
+});
+
+// Central function to add points
+async function addPoints(user, points, reason) {
   try {
-    const pointChange = parseInt(document.getElementById("pointChange").value);
-    const reasonSelect = document.getElementById("reason");
-    let reason = reasonSelect.value;
+    const userRef = doc(db, "users", user);
+    const snapshot = await getDoc(userRef);
+    const data = snapshot.exists() ? snapshot.data() : { points: 0, history: [] };
 
-    if (reason === "Other") {
-      const otherReason = document.getElementById("otherReason").value.trim();
-      if (!otherReason) {
-        alert("Please enter a reason for 'Other'.");
-        return;
-      }
-      reason = otherReason;
-    }
+    const newPoints = (data.points || 0) + points;
+    const newHistoryItem = { time: new Date().toLocaleString(), points, reason };
 
-    if (!isNaN(pointChange) && reason) {
-      const userRef = doc(window.db, "users", currentUser);
-      const snapshot = await getDoc(userRef);
-      if (!snapshot.exists()) return;
+    // Update Firestore
+    await updateDoc(userRef, {
+      points: newPoints,
+      history: arrayUnion(newHistoryItem)
+    });
 
-      const data = snapshot.data();
-      const newPoints = data.points + pointChange;
-      const newHistoryItem = {
-        time: new Date().toLocaleString(),
-        points: pointChange,
-        reason: reason
-      };
-
-      await updateDoc(userRef, {
-        points: newPoints,
-        history: arrayUnion(newHistoryItem)
-      });
-
-      // Clear point input field only
-      document.getElementById("pointChange").value = '';
-
-      loadUser(currentUser);
-    } else {
-      alert("Please enter a valid number of points and select a reason.");
-    }
+    // Reload user to refresh UI
+    loadUser(user);
   } catch (error) {
     console.error("Error updating points:", error);
-    alert("Failed to update points. Please try again.");
   }
 }
 
-// Event listeners for user selection
+// User selection buttons
 document.getElementById("dario").addEventListener("click", () => loadUser("dario"));
 document.getElementById("linda").addEventListener("click", () => loadUser("linda"));
-
-// Assign updatePoints button listener once
-document.getElementById("updatePointsBtn").addEventListener("click", updatePoints);
-
-// Show/hide otherReason input based on reason select value
-document.getElementById("reason").addEventListener("change", (event) => {
-  const otherReasonInput = document.getElementById("otherReason");
-  if (event.target.value === "Other") {
-    otherReasonInput.style.display = "inline-block";
-  } else {
-    otherReasonInput.style.display = "none";
-    otherReasonInput.value = '';
-  }
-});
