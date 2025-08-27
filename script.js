@@ -58,7 +58,16 @@ async function updatePoints() {
   try {
     const pointChange = parseInt(document.getElementById("pointChange").value);
     const reasonSelect = document.getElementById("reason");
-    const reason = reasonSelect.value;
+    let reason = reasonSelect.value;
+
+    if (reason === "Other") {
+      const otherReason = document.getElementById("otherReason").value.trim();
+      if (!otherReason) {
+        alert("Please enter a reason for 'Other'.");
+        return;
+      }
+      reason = otherReason;
+    }
 
     if (!isNaN(pointChange) && reason) {
       const userRef = doc(window.db, "users", currentUser);
@@ -97,3 +106,14 @@ document.getElementById("linda").addEventListener("click", () => loadUser("linda
 
 // Assign updatePoints button listener once
 document.getElementById("updatePointsBtn").addEventListener("click", updatePoints);
+
+// Show/hide otherReason input based on reason select value
+document.getElementById("reason").addEventListener("change", (event) => {
+  const otherReasonInput = document.getElementById("otherReason");
+  if (event.target.value === "Other") {
+    otherReasonInput.style.display = "inline-block";
+  } else {
+    otherReasonInput.style.display = "none";
+    otherReasonInput.value = '';
+  }
+});
