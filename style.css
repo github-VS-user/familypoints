@@ -1,4 +1,3 @@
-/* General body and font */
 body {
     font-family: 'Inter', sans-serif;
     background: linear-gradient(135deg, #74ABE2, #5563DE);
@@ -11,14 +10,12 @@ body {
     padding: 20px;
 }
 
-/* Main title */
 h1 {
     margin-top: 20px;
     font-size: 2.5rem;
     font-weight: 700;
 }
 
-/* Buttons section */
 .buttons {
     margin: 30px 0;
     display: flex;
@@ -44,7 +41,6 @@ h1 {
     color: #2c379e;
 }
 
-/* Content card */
 #content {
     background: #fff;
     color: #333;
@@ -56,7 +52,6 @@ h1 {
     text-align: left;
 }
 
-/* User section checklist */
 #userSection input, #userSection textarea {
     width: auto;
     padding: 7px;
@@ -67,7 +62,6 @@ h1 {
     box-sizing: border-box;
 }
 
-/* Bonus buttons styling */
 #bonusButtons {
     display: flex;
     flex-wrap: wrap;
@@ -94,7 +88,6 @@ h1 {
     transform: scale(1.07);
 }
 
-/* Checklist styling */
 ul {
     margin-bottom: 16px;
     padding-left: 22px;
@@ -105,16 +98,26 @@ ul li {
     line-height: 1.5;
 }
 
-/* School checklist checkboxes */
 .school-item {
     accent-color: #5563DE;
 }
 
-/* History section */
 #history {
     list-style-type: none;
     padding: 0;
     margin: 18px 0 8px 0;
+    transition: max-height 0.2s ease, opacity 0.2s ease;
+    overflow: hidden;
+}
+#history.collapsed {
+    max-height: 0;
+    opacity: 0;
+    padding: 0;
+    margin: 0;
+}
+#history:not(.collapsed) {
+    max-height: 800px;
+    opacity: 1;
 }
 
 #history li {
@@ -144,7 +147,6 @@ ul li {
     color: #5563DE;
 }
 
-/* Summary section */
 #weeklyTotal, #monthlyTotal, #moneyTotal {
     font-size: 1.1rem;
     margin-bottom: 3px;
@@ -158,6 +160,25 @@ h3 {
     font-size: 1.2rem;
     color: #5563DE;
     font-weight: 600;
+}
+
+.collapse-btn {
+    background: #5563DE;
+    color: #fff;
+    border: none;
+    padding: 7px 16px;
+    border-radius: 7px;
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: 5px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.collapse-btn[aria-expanded="false"] {
+    background: #74ABE2;
+}
+.collapse-btn:focus {
+    outline: 2px solid #5563DE;
 }
 
 #defaultMessage {
