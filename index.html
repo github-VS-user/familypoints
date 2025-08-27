@@ -80,13 +80,15 @@
       <h3 id="currentPoints">0 Points</h3>
 
       <input type="number" id="pointChange" placeholder="Change points (+/-)">
-      <select id="reason">
+      <select id="reason" style="margin-top:10px; padding:8px; border-radius:6px; border:1px solid #ccc; font-size:1rem;">
         <option value="">Select reason</option>
         <option value="Chores completed">Chores completed</option>
         <option value="Helping family">Helping family</option>
         <option value="Extra homework">Extra homework</option>
         <option value="Misbehavior">Misbehavior</option>
+        <option value="Other">Other (specify)</option>
       </select>
+      <input type="text" id="otherReason" placeholder="Please specify" style="display:none; margin-top:8px; padding:8px; border-radius:6px; border:1px solid #ccc; font-size:1rem;">
       <button id="updatePointsBtn">Update Points</button>
 
       <h3>History</h3>
