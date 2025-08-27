@@ -6,66 +6,6 @@
   <title>Family Points</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Inter', sans-serif;
-      background: linear-gradient(135deg, #74ABE2, #5563DE);
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      min-height: 100vh;
-      padding: 20px;
-    }
-
-    h1 {
-      margin-top: 20px;
-      font-size: 2.5rem;
-      font-weight: 700;
-    }
-
-    .buttons {
-      margin: 30px 0;
-      display: flex;
-      gap: 15px;
-    }
-
-    .buttons button {
-      background: #fff;
-      color: #5563DE;
-      border: none;
-      padding: 12px 24px;
-      border-radius: 8px;
-      font-size: 1.1rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s ease-in-out;
-    }
-
-    .buttons button:hover {
-      background: #f0f0f0;
-      transform: scale(1.05);
-    }
-
-    #content {
-      background: #fff;
-      color: #333;
-      width: 100%;
-      max-width: 600px;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-      text-align: left;
-      animation: fadeIn 0.3s ease-in-out;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-  </style>
 </head>
 <body>
   <h1>🌟 Family Points</h1>
@@ -78,8 +18,6 @@
     <div id="userSection" style="display:none;">
       <h2 id="userName"></h2>
       <h3 id="currentPoints">0 Points</h3>
-      <h3>Points History</h3>
-      <ul id="history"></ul>
 
       <!-- Daily Checklist -->
       <h3>Daily Routine</h3>
@@ -125,13 +63,18 @@
       <p id="weeklyTotal">Weekly Points: 0</p>
       <p id="monthlyTotal">Monthly Points: 0</p>
       <p id="moneyTotal">Money Equivalent: 0 CHF</p>
+
+      <!-- Collapsible History Section at the end -->
+      <button id="toggleHistoryBtn" class="collapse-btn" aria-expanded="true" aria-controls="history">Hide Points History</button>
+      <h3 style="margin-top:8px;">Points History</h3>
+      <ul id="history"></ul>
     </div>
     <p id="defaultMessage">Select a family member to view and update their points.</p>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-    import { getFirestore } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCFCP4xAnisuqItayg63PDNBllERQt2KHc",
@@ -145,10 +88,147 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    window.app = app; // Expose Firebase app globally
-    window.db = db;   // Expose Firestore globally
-  </script>
+    window.app = app;
+    window.db = db;
 
-  <script type="module" src="script.js"></script>
+    let currentUser = null;
+
+    async function loadUser(user) {
+      currentUser = user;
+      try {
+        const userRef = doc(db, "users", user);
+        const snapshot = await getDoc(userRef);
+
+        const userNameElem = document.getElementById("userName");
+        const currentPointsElem = document.getElementById("currentPoints");
+        const historyList = document.getElementById("history");
+        const userSection = document.getElementById("userSection");
+        const defaultMessage = document.getElementById("defaultMessage");
+
+        if (!userNameElem || !currentPointsElem || !historyList || !userSection || !defaultMessage) {
+          console.error("Missing one or more required HTML elements.");
+          return;
+        }
+
+        let data;
+        if (snapshot.exists()) {
+          data = snapshot.data();
+        } else {
+          data = { points: 0, history: [], weeklyTotal: 0, monthlyTotal: 0 };
+          await setDoc(userRef, data);
+        }
+
+        userNameElem.innerText = `${user.charAt(0).toUpperCase() + user.slice(1)}'s Points`;
+        currentPointsElem.innerText = `${data.points || 0} Points`;
+
+        // Render history
+        historyList.innerHTML = "";
+        (data.history || []).slice().reverse().forEach(item => {
+          const li = document.createElement("li");
+          li.innerText = `${item.time} - ${item.points} Points (${item.reason})`;
+          historyList.appendChild(li);
+        });
+
+        userSection.style.display = "block";
+        defaultMessage.style.display = "none";
+
+        updateSummary(data);
+      } catch (error) {
+        console.error("Error loading user:", error);
+        alert("Failed to load user data. Check your internet connection.");
+      }
+    }
+
+    function updateSummary(data) {
+      const weeklyEl = document.getElementById("weeklyTotal");
+      const monthlyEl = document.getElementById("monthlyTotal");
+      const moneyEl = document.getElementById("moneyTotal");
+
+      if (weeklyEl) weeklyEl.innerText = `Weekly Points: ${data.weeklyTotal || 0}`;
+      if (monthlyEl) monthlyEl.innerText = `Monthly Points: ${data.monthlyTotal || 0}`;
+      if (moneyEl) moneyEl.innerText = `Money Equivalent: ${Math.floor((data.monthlyTotal || 0)/15)} CHF`;
+    }
+
+    async function addPoints(user, points, reason) {
+      if (!user) return;
+      try {
+        const userRef = doc(db, "users", user);
+        const snapshot = await getDoc(userRef);
+        const data = snapshot.exists() ? snapshot.data() : { points: 0, history: [] };
+
+        const newPoints = (data.points || 0) + points;
+        const newHistoryItem = { time: new Date().toLocaleString(), points, reason };
+
+        await updateDoc(userRef, {
+          points: newPoints,
+          history: arrayUnion(newHistoryItem)
+        });
+
+        document.getElementById("currentPoints").innerText = `${newPoints} Points`;
+        const historyList = document.getElementById("history");
+        if (historyList) {
+          const li = document.createElement("li");
+          li.innerText = `${newHistoryItem.time} - ${newHistoryItem.points} Points (${newHistoryItem.reason})`;
+          historyList.insertBefore(li, historyList.firstChild);
+        }
+
+        // Optionally update summary
+        const weeklyTotal = (data.weeklyTotal || 0) + points;
+        const monthlyTotal = (data.monthlyTotal || 0) + points;
+        updateSummary({ weeklyTotal, monthlyTotal });
+      } catch (error) {
+        console.error("Error updating points:", error);
+        alert("Failed to update points. Check your internet connection.");
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // Daily checklist
+      document.querySelectorAll(".check-item").forEach(cb => {
+        cb.addEventListener("change", async (e) => {
+          if (!currentUser) return;
+          const points = e.target.checked ? parseInt(e.target.dataset.points) : -parseInt(e.target.dataset.points);
+          const reason = e.target.nextSibling.textContent.trim();
+          await addPoints(currentUser, points, reason);
+        });
+      });
+
+      // Bonus buttons
+      document.querySelectorAll(".bonus-btn").forEach(btn => {
+        btn.addEventListener("click", async (e) => {
+          if (!currentUser) return;
+          const points = parseInt(btn.dataset.points);
+          const reason = btn.innerText.replace(/\(\+\d+\)/,'').trim();
+          await addPoints(currentUser, points, reason);
+        });
+      });
+
+      // School checklist
+      document.querySelectorAll(".school-item").forEach(cb => {
+        cb.addEventListener("change", async (e) => {
+          if (!currentUser) return;
+          const points = e.target.checked ? parseInt(e.target.dataset.points) : -parseInt(e.target.dataset.points);
+          const reason = e.target.nextSibling.textContent.trim();
+          await addPoints(currentUser, points, reason);
+        });
+      });
+
+      // User selection buttons
+      document.getElementById("dario").addEventListener("click", () => loadUser("dario"));
+      document.getElementById("linda").addEventListener("click", () => loadUser("linda"));
+
+      // History collapsible
+      const btn = document.getElementById("toggleHistoryBtn");
+      const history = document.getElementById("history");
+      if (btn && history) {
+        btn.addEventListener("click", () => {
+          const expanded = btn.getAttribute("aria-expanded") === "true";
+          btn.setAttribute("aria-expanded", (!expanded).toString());
+          btn.textContent = expanded ? "Show Points History" : "Hide Points History";
+          history.classList.toggle("collapsed", expanded);
+        });
+      }
+    });
+  </script>
 </body>
 </html>
