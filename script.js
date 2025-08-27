@@ -22,19 +22,35 @@ async function loadUser(user) {
     if (snapshot.exists()) {
       const data = snapshot.data();
 
-      document.getElementById("userName").innerText = `${user.charAt(0).toUpperCase() + user.slice(1)}'s Points`;
-      document.getElementById("currentPoints").innerText = `${data.points || 0} Points`;
+      const userNameElem = document.getElementById("userName");
+      if (userNameElem) {
+        userNameElem.innerText = `${user.charAt(0).toUpperCase() + user.slice(1)}'s Points`;
+      }
+
+      const currentPointsElem = document.getElementById("currentPoints");
+      if (currentPointsElem) {
+        currentPointsElem.innerText = `${data.points || 0} Points`;
+      }
 
       const historyList = document.getElementById("history");
-      historyList.innerHTML = "";
-      (data.history || []).slice().reverse().forEach(item => {
-        const li = document.createElement("li");
-        li.innerText = `${item.time} - ${item.points} Points (${item.reason})`;
-        historyList.appendChild(li);
-      });
+      if (historyList) {
+        historyList.innerHTML = "";
+        (data.history || []).slice().reverse().forEach(item => {
+          const li = document.createElement("li");
+          li.innerText = `${item.time} - ${item.points} Points (${item.reason})`;
+          historyList.appendChild(li);
+        });
+      }
 
-      document.getElementById("userSection").style.display = "block";
-      document.getElementById("defaultMessage").style.display = "none";
+      const userSection = document.getElementById("userSection");
+      if (userSection) {
+        userSection.style.display = "block";
+      }
+
+      const defaultMessage = document.getElementById("defaultMessage");
+      if (defaultMessage) {
+        defaultMessage.style.display = "none";
+      }
 
       updateSummary(data);
     } else {
