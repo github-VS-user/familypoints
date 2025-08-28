@@ -23,7 +23,8 @@ h1 {
     gap: 15px;
 }
 
-.buttons button {
+.buttons button,
+#rulesBtn {
     background: #fff;
     color: #5563DE;
     border: none;
@@ -37,7 +38,8 @@ h1 {
 }
 
 .buttons button:hover,
-.buttons button.selected {
+.buttons button.selected,
+#rulesBtn:hover {
     background: #5563DE;
     color: #fff;
     border: 2px solid #fff;
