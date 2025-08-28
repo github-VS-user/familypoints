@@ -43,24 +43,23 @@ h1 {
     border: 2px solid #fff;
 }
 
-.big-action-btn {
-    background: linear-gradient(135deg, #74ABE2 70%, #5563DE 100%);
+.award-btn {
+    background: linear-gradient(90deg, #5563DE 60%, #74ABE2 100%);
     color: #fff;
     border: none;
-    border-radius: 9px;
-    padding: 15px 20px;
-    font-size: 1.12rem;
+    padding: 9px 18px;
+    border-radius: 8px;
+    font-size: 1.07rem;
     font-weight: 700;
-    margin-bottom: 12px;
-    box-shadow: 0 2px 12px rgba(85,99,222,0.14);
+    margin-bottom: 9px;
+    margin-top: 5px;
+    box-shadow: 0 2px 8px rgba(85,99,222,0.12);
     transition: background 0.2s, transform 0.2s;
     outline: none;
-    display: block;
-    width: 100%;
 }
-.big-action-btn:hover {
-    background: linear-gradient(135deg, #5563DE 65%, #74ABE2 100%);
-    transform: scale(1.03);
+.award-btn:hover {
+    background: linear-gradient(90deg, #74ABE2 60%, #5563DE 100%);
+    transform: scale(1.04);
 }
 
 .summary-row {
@@ -98,9 +97,38 @@ h1 {
     font-size: 1rem;
     font-weight: 500;
 }
+
 .alert {
     background: #F2D7D5;
     color: #C0392B;
+}
+
+#pointsBar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 8px 0;
+}
+
+#pointsBar .bar {
+    flex: 1;
+    height: 12px;
+    background: #DDD;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+}
+
+#pointsBar .bar .fill {
+    height: 100%;
+    background: linear-gradient(90deg, #74ABE2, #5563DE);
+    transition: width 0.4s;
+    border-radius: 8px;
+}
+
+#pointsBar .label {
+    font-size: 0.94rem;
+    font-weight: 600;
 }
 
 ul {
@@ -159,16 +187,19 @@ ul li {
     margin-bottom: 6px;
     transition: background 0.2s;
 }
+
 .bonus-btn:hover {
     background: #5563DE;
 }
-.bonus-btn.danger {
-    background: #e74c3c !important;
+
+.danger-btn {
+    background: #E74C3C !important;
     color: #fff !important;
-    border: 2px solid #c0392b !important;
+    border: none !important;
+    font-weight: 700 !important;
 }
-.bonus-btn.danger:hover {
-    background: #c0392b !important;
+.danger-btn:hover {
+    background: #C0392B !important;
 }
 
 .school-item {
@@ -248,6 +279,25 @@ h3 {
     outline: 2px solid #5563DE;
 }
 
+#resetBtn {
+    background: #aaa;
+    color: #fff;
+    border: none;
+    padding: 7px 15px;
+    border-radius: 7px;
+    font-size: 0.92rem;
+    font-weight: 500;
+    margin-top: 10px;
+    cursor: pointer;
+    opacity: 0.8;
+    float: right;
+    transition: background 0.2s;
+}
+#resetBtn:hover {
+    background: #E74C3C;
+    opacity: 1;
+}
+
 #defaultMessage {
     font-size: 1.12rem;
     color: #2c379e;
@@ -258,38 +308,19 @@ h3 {
     border-radius: 8px;
 }
 
-.reset-btn {
-    background: #f3f7ff;
-    color: #c0392b;
-    border: 1px solid #e74c3c;
-    border-radius: 9px;
-    font-size: 0.92rem;
-    font-weight: 600;
-    padding: 7px 13px;
-    margin: 14px 0 3px 0;
-    cursor: pointer;
-    box-shadow: 0 1px 5px rgba(200,50,50,0.05);
-    transition: background 0.2s;
-    display: block;
-    width: 120px;
-}
-.reset-btn:hover {
-    background: #e74c3c;
-    color: #fff;
+.version {
+    font-size: 0.97rem;
+    color: #74ABE2;
+    position: fixed;
+    bottom: 9px;
+    right: 12px;
+    opacity: 0.7;
+    z-index: 200;
+    pointer-events: none;
+    font-weight: 700;
 }
 
-.version-badge {
-    font-size: 0.92rem;
-    color: #5563DE;
-    background: #EEF2FF;
-    border-radius: 7px;
-    padding: 4px 14px;
-    margin: 6px 0 4px 0;
-    text-align: right;
-    width: fit-content;
-    margin-left: auto;
-}
-
+/* Mobile responsive */
 @media (max-width: 650px) {
     #content {
         padding: 10px;
