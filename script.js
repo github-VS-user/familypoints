@@ -4,8 +4,7 @@ import {
   getDoc,
   setDoc,
   updateDoc,
-  arrayUnion,
-  deleteDoc
+  arrayUnion
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 const db = getFirestore(window.app);
@@ -233,7 +232,6 @@ async function addPoints(user, points, reason, opts={recovery:false}) {
   updateRecoverySummary();
 }
 
-// Award daily points
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("dario").addEventListener("click", () => loadUser("dario"));
   document.getElementById("linda").addEventListener("click", () => loadUser("linda"));
@@ -320,7 +318,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Reset button logic
   const resetBtn = document.getElementById("resetBtn");
   if (resetBtn) {
     resetBtn.addEventListener("click", async () => {
