@@ -15,49 +15,52 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start;
       min-height: 100vh;
       padding: 20px;
     }
     h1 {
       margin-top: 20px;
-      font-size: 2.5rem;
+      font-size: 2.2rem;
       font-weight: 700;
+      text-align: center;
     }
     .buttons {
-      margin: 30px 0;
+      margin: 24px 0;
       display: flex;
-      gap: 15px;
+      gap: 12px;
     }
     .buttons button {
       background: #fff;
       color: #5563DE;
       border: none;
-      padding: 12px 24px;
+      padding: 10px 22px;
       border-radius: 8px;
-      font-size: 1.1rem;
+      font-size: 1rem;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.2s ease-in-out;
+      transition: all 0.2s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
     }
-    .buttons button:hover {
-      background: #f0f0f0;
-      transform: scale(1.05);
+    .buttons button.selected {
+      background: #5563DE;
+      color: #fff;
+      border: 2px solid #fff;
     }
     #content {
       background: #fff;
       color: #333;
       width: 100%;
-      max-width: 600px;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+      max-width: 500px;
+      padding: 18px;
+      border-radius: 14px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.18);
       text-align: left;
-      animation: fadeIn 0.3s ease-in-out;
+      animation: fadeIn 0.3s;
+      margin-bottom: 18px;
     }
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
+      from { opacity: 0; transform: translateY(20px);}
+      to { opacity: 1; transform: translateY(0);}
     }
     .collapse-btn {
       background: #5563DE;
@@ -71,15 +74,95 @@
       cursor: pointer;
       transition: background 0.2s;
     }
-    .collapse-btn[aria-expanded="false"] {
-      background: #74ABE2;
+    .badge {
+      display: inline-block;
+      background: #E74C3C;
+      color: #fff;
+      border-radius: 7px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      margin-left: 10px;
+      vertical-align: middle;
     }
-    .collapse-btn:focus {
-      outline: 2px solid #5563DE;
+    /* Responsive for mobile */
+    @media (max-width: 650px) {
+      #content {
+        padding: 10px;
+        border-radius: 10px;
+        max-width: 100vw;
+      }
+      h1 { font-size: 1.4rem;}
+      .buttons button { font-size: 0.9rem; padding: 7px 12px;}
+      .collapse-btn { font-size: 0.9rem;}
     }
+    .minus-btn {
+      background: #E74C3C;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      margin-left: 6px;
+      padding: 0 7px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      font-weight: 700;
+      vertical-align: middle;
+      transition: background 0.15s;
+    }
+    .minus-btn:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+    .alert, .warning {
+      background: #F9D7A0;
+      color: #D35400;
+      border-radius: 6px;
+      padding: 6px 10px;
+      margin: 8px 0;
+      font-size: 1rem;
+      font-weight: 500;
+    }
+    .alert {
+      background: #F2D7D5;
+      color: #C0392B;
+    }
+    .summary-row {
+      background: #F6F6F6;
+      border-radius: 7px;
+      padding: 7px 10px;
+      margin: 10px 0 8px 0;
+      font-size: 0.98rem;
+    }
+    #pointsBar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 8px 0;
+    }
+    #pointsBar .bar {
+      flex: 1;
+      height: 12px;
+      background: #DDD;
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+    }
+    #pointsBar .bar .fill {
+      height: 100%;
+      background: linear-gradient(90deg, #74ABE2, #5563DE);
+      transition: width 0.4s;
+      border-radius: 8px;
+    }
+    #pointsBar .label {
+      font-size: 0.94rem;
+      font-weight: 600;
+    }
+    /* Hide scrollbars for history */
     #history {
       transition: max-height 0.2s ease, opacity 0.2s ease;
-      overflow: hidden;
+      overflow-y: auto;
+      max-height: 220px;
+      padding-right: 9px;
     }
     #history.collapsed {
       max-height: 0;
@@ -91,6 +174,39 @@
       max-height: 800px;
       opacity: 1;
     }
+    /* Checklist for easier touch */
+    #dailyChecklist li, #schoolChecklist li {
+      margin-bottom: 9px;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    #dailyChecklist input[type="checkbox"], #schoolChecklist input[type="checkbox"] {
+      margin-right: 6px;
+      transform: scale(1.1);
+    }
+    /* Bonus buttons mobile fix */
+    #bonusButtons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin-bottom: 7px;
+    }
+    .bonus-btn {
+      background: #74ABE2;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 7px 13px;
+      font-size: 0.98rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-bottom: 6px;
+      transition: background 0.2s;
+    }
+    .bonus-btn:hover {
+      background: #5563DE;
+    }
   </style>
 </head>
 <body>
@@ -99,73 +215,140 @@
     <button id="dario">Dario</button>
     <button id="linda">Linda</button>
   </div>
-
   <div id="content">
     <div id="userSection" style="display:none;">
       <h2 id="userName"></h2>
       <h3 id="currentPoints">0 Points</h3>
-
-      <!-- Daily Checklist: unique IDs for daily tracking -->
-      <h3>Daily Routine</h3>
+      <div id="pointsBar">
+        <span class="label">Weekly</span>
+        <div class="bar"><div class="fill" id="weeklyBarFill" style="width:0%;"></div></div>
+        <span id="weeklyBarLabel">0/75</span>
+      </div>
+      <div class="summary-row">
+        <span id="weeklyTotal">Weekly: 0</span> |
+        <span id="monthlyTotal">Monthly: 0</span> |
+        <span id="moneyTotal">CHF: 0</span>
+        <span id="maxWarning" class="badge" style="display:none;">Max points reached!</span>
+      </div>
+      <div id="recoverySummary" class="summary-row">
+        <span id="lostPointsSummary">Lost points this week: 0</span> |
+        <span id="recoveredPointsSummary">Recovered: 0</span>
+      </div>
+      <div id="overdueAlerts">
+        <!-- Shower/bedtime overdue warning will appear here -->
+      </div>
+      <h3 style="margin-top:18px;">Daily Routine</h3>
+      <button id="awardDailyBtn" style="margin-bottom:10px;">Award Daily Points (+15)</button>
+      <div class="summary-row" id="dailySummaryRow">
+        <span id="todayAwarded">Awarded: 0</span> |
+        <span id="todayLost">Lost: 0</span> |
+        <span id="todayNet">Net: 0</span>
+      </div>
       <ul id="dailyChecklist">
-        <li><input type="checkbox" class="check-item" id="daily-dressed"    data-points="1"> Getting dressed in the morning</li>
-        <li><input type="checkbox" class="check-item" id="daily-bed"        data-points="1"> Making the bed</li>
-        <li><input type="checkbox" class="check-item" id="daily-plate"      data-points="1"> Always bringing out the plate after meals</li>
-        <li><input type="checkbox" class="check-item" id="daily-teeth"      data-points="1"> Brushing your teeth after breakfast and dinner</li>
-        <li><input type="checkbox" class="check-item" id="daily-shower"     data-points="1"> Showering every other day and tidying up your bathrobe</li>
-        <li><input type="checkbox" class="check-item" id="daily-ipad"       data-points="1"> Charging your iPad and tidying folders for the next day</li>
-        <li><input type="checkbox" class="check-item" id="daily-pajamas"    data-points="1"> Putting on your pajamas</li>
-        <li><input type="checkbox" class="check-item" id="daily-laundry"    data-points="1"> Putting dirty laundry in the hamper</li>
-        <li><input type="checkbox" class="check-item" id="daily-clothes"    data-points="1"> Laying out clothes for the next day</li>
-        <li><input type="checkbox" class="check-item" id="daily-bedtime"    data-points="1"> Going to bed on time (reading + lights out)</li>
-        <li><input type="checkbox" class="check-item" id="daily-table_manners" data-points="1"> At the table: no singing/dancing/playing with hands, no feet on chairs</li>
-        <li><input type="checkbox" class="check-item" id="daily-parent"      data-points="1"> Don't act like a parent</li>
-        <li><input type="checkbox" class="check-item" id="daily-interrupt"   data-points="1"> Don't interrupt while others are talking</li>
-        <li><input type="checkbox" class="check-item" id="daily-repeat"      data-points="1"> Don't make mom repeat things</li>
-        <li><input type="checkbox" class="check-item" id="daily-screen"      data-points="1"> Respect screen time rules</li>
+        <li>
+          <input type="checkbox" class="check-item" id="daily-dressed" data-points="1">
+          Getting dressed in the morning
+          <button class="minus-btn" data-key="dressed" title="Mark rule broken">-1</button>
+        </li>
+        <li>
+          <input type="checkbox" class="check-item" id="daily-bed" data-points="1">
+          Making the bed
+          <button class="minus-btn" data-key="bed">-1</button>
+        </li>
+        <li>
+          <input type="checkbox" class="check-item" id="daily-plate" data-points="1">
+          Always bringing out the plate after meals
+          <button class="minus-btn" data-key="plate">-1</button>
+        </li>
+        <li>
+          <input type="checkbox" class="check-item" id="daily-teeth" data-points="1">
+          Brushing your teeth after breakfast and dinner
+          <button class="minus-btn" data-key="teeth">-1</button>
+        </li>
+        <li>
+          <input type="checkbox" class="check-item" id="daily-shower" data-points="1">
+          Showering every other day and tidying up your bathrobe
+          <button class="minus-btn" data-key="shower">-1</button>
+        </li>
+        <li>
+          <input type="checkbox" class="check-item" id="daily-ipad" data-points="1">
+          Charging your iPad and tidying folders for the next day
+          <button class="minus-btn" data-key="ipad">-1</button>
+        </li>
+        <li>
+          <input type="checkbox" class="check-item" id="daily-pajamas" data-points="1">
+          Putting on your pajamas
+          <button class="minus-btn" data-key="pajamas">-1</button>
+        </li>
+        <li>
+          <input type="checkbox" class="check-item" id="daily-laundry" data-points="1">
+          Putting dirty laundry in the hamper
+          <button class="minus-btn" data-key="laundry">-1</button>
+        </li>
+        <li>
+          <input type="checkbox" class="check-item" id="daily-clothes" data-points="1">
+          Laying out clothes for the next day
+          <button class="minus-btn" data-key="clothes">-1</button>
+        </li>
+        <li>
+          <input type="checkbox" class="check-item" id="daily-bedtime" data-points="1">
+          Going to bed on time (reading + lights out)
+          <button class="minus-btn" data-key="bedtime">-1</button>
+        </li>
+        <li>
+          <input type="checkbox" class="check-item" id="daily-table_manners" data-points="1">
+          At the table: no singing/dancing/playing with hands, no feet on chairs
+          <button class="minus-btn" data-key="table_manners">-1</button>
+        </li>
+        <li>
+          <input type="checkbox" class="check-item" id="daily-parent" data-points="1">
+          Don't act like a parent
+          <button class="minus-btn" data-key="parent">-1</button>
+        </li>
+        <li>
+          <input type="checkbox" class="check-item" id="daily-interrupt" data-points="1">
+          Don't interrupt while others are talking
+          <button class="minus-btn" data-key="interrupt">-1</button>
+        </li>
+        <li>
+          <input type="checkbox" class="check-item" id="daily-repeat" data-points="1">
+          Don't make mom repeat things
+          <button class="minus-btn" data-key="repeat">-1</button>
+        </li>
       </ul>
-
-      <!-- Rewarded Behaviors -->
       <h3>Rewarded Behaviors</h3>
       <div id="bonusButtons">
-        <button class="bonus-btn" data-points="5">Set the table (+5)</button>
-        <button class="bonus-btn" data-points="5">Hang out the washing (+5)</button>
-        <button class="bonus-btn" data-points="15">Take out Emy (+15)</button>
-        <button class="bonus-btn" data-points="5">Take out garbage (+5)</button>
-        <button class="bonus-btn" data-points="15">Clean rabbit area (+15)</button>
-        <button class="bonus-btn" data-points="15">Order drawers/closets (+15)</button>
-        <button class="bonus-btn" data-points="15">General cleaning (+15)</button>
+        <button class="bonus-btn" data-points="5" data-type="recovery">Set the table (+5)</button>
+        <button class="bonus-btn" data-points="5" data-type="recovery">Hang out the washing (+5)</button>
+        <button class="bonus-btn" data-points="15" data-type="recovery">Take out Emy (+15)</button>
+        <button class="bonus-btn" data-points="5" data-type="recovery">Take out garbage (+5)</button>
+        <button class="bonus-btn" data-points="15" data-type="recovery">Clean rabbit area (+15)</button>
+        <button class="bonus-btn" data-points="15" data-type="recovery">Order drawers/closets (+15)</button>
+        <button class="bonus-btn" data-points="15" data-type="recovery">General cleaning (+15)</button>
         <button class="bonus-btn" data-points="15">To have a 6 (+15)</button>
         <button class="bonus-btn" data-points="-75">If grade below 4.5 (-75)</button>
         <button class="bonus-btn" data-points="-75">If screen time rules not respected (-75)</button>
       </div>
-
-      <!-- School Section (no grade below minimum here) -->
       <h3>School</h3>
       <ul id="schoolChecklist">
-        <li><input type="checkbox" class="school-item" data-points="75"> Monthly average ≥ 5</li>
-        <li><input type="checkbox" class="school-item" data-points="150"> All subjects ≥ 5 at month end</li>
+        <li>
+          <input type="checkbox" class="school-item" data-points="75">
+          Monthly average ≥ 5
+        </li>
+        <li>
+          <input type="checkbox" class="school-item" data-points="150">
+          All subjects ≥ 5 at month end
+        </li>
       </ul>
-
-      <!-- Weekly/Monthly Summary -->
-      <h3>Summary</h3>
-      <p id="weeklyTotal">Weekly Points: 0</p>
-      <p id="monthlyTotal">Monthly Points: 0</p>
-      <p id="moneyTotal">Money Equivalent: 0 CHF</p>
-
-      <!-- Collapsible History Section at the end -->
       <button id="toggleHistoryBtn" class="collapse-btn" aria-expanded="true" aria-controls="history">Hide Points History</button>
       <h3 style="margin-top:8px;">Points History</h3>
       <ul id="history"></ul>
     </div>
     <p id="defaultMessage">Select a family member to view and update their points.</p>
   </div>
-
-  <!-- Firebase and main logic scripts -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
     import { getFirestore } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
-
     const firebaseConfig = {
       apiKey: "AIzaSyCFCP4xAnisuqItayg63PDNBllERQt2KHc",
       authDomain: "family-db25.firebaseapp.com",
@@ -175,27 +358,11 @@
       appId: "1:581814557059:web:ebc024f6ba93e85c4efeb6",
       measurementId: "G-E4P16CHQDK"
     };
-
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     window.app = app;
     window.db = db;
   </script>
   <script type="module" src="script.js"></script>
-  <script>
-    // Collapsible History JS
-    document.addEventListener("DOMContentLoaded", () => {
-      const btn = document.getElementById("toggleHistoryBtn");
-      const history = document.getElementById("history");
-      if (btn && history) {
-        btn.addEventListener("click", () => {
-          const expanded = btn.getAttribute("aria-expanded") === "true";
-          btn.setAttribute("aria-expanded", (!expanded).toString());
-          btn.textContent = expanded ? "Show Points History" : "Hide Points History";
-          history.classList.toggle("collapsed", expanded);
-        });
-      }
-    });
-  </script>
 </body>
 </html>
