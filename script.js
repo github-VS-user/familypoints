@@ -7,23 +7,20 @@ import {
   arrayUnion
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
-if (!window.app) {
-  console.error("Firebase app not initialized. Make sure window.app exists.");
-}
-
 const db = getFirestore(window.app);
-window.db = db;
 
 let currentUser = null;
-let todayStr = new Date().toISOString().slice(0,10); // "YYYY-MM-DD"
+let todayStr = new Date().toISOString().slice(0,10); // YYYY-MM-DD
+let todayAwarded = 0, todayLost = 0, todayNet = 0, awardedToday = false, rulesBroken = {};
+let lostPointsThisWeek = 0, recoveredPointsThisWeek = 0;
+let lastShowerDate = null, showerOverdue = false;
+let bedtimeOverdue = false;
 
-// Utility: Get checklist item keys (should match data-id in HTML)
+// Checklist keys
 const dailyKeys = [
   "dressed", "bed", "plate", "teeth", "shower", "ipad", "pajamas", "laundry",
   "clothes", "bedtime", "table_manners", "parent", "interrupt", "repeat"
 ];
-
-// Utility: Map checklist item keys to human-readable labels
 const dailyLabels = {
   dressed: "Getting dressed in the morning",
   bed: "Making the bed",
@@ -41,159 +38,287 @@ const dailyLabels = {
   repeat: "Don't make mom repeat things"
 };
 
-// Load user data
+function getMonday(d) {
+  d = new Date(d);
+  var day = d.getDay(), diff = d.getDate() - day + (day === 0 ? -6:1);
+  return new Date(d.setDate(diff));
+}
+function formatDate(date) {
+  return date.toISOString().slice(0,10);
+}
+
+function updateDailySummary() {
+  document.getElementById("todayAwarded").innerText = `Awarded: ${todayAwarded}`;
+  document.getElementById("todayLost").innerText = `Lost: ${todayLost}`;
+  document.getElementById("todayNet").innerText = `Net: ${todayNet}`;
+}
+
+function updateBar(weekly) {
+  const fill = document.getElementById("weeklyBarFill");
+  const label = document.getElementById("weeklyBarLabel");
+  const max = 75;
+  let pct = Math.min(weekly / max, 1) * 100;
+  fill.style.width = `${pct}%`;
+  label.innerText = `${weekly}/${max}`;
+}
+
+function updateRecoverySummary() {
+  document.getElementById("lostPointsSummary").innerText = `Lost points this week: ${lostPointsThisWeek}`;
+  document.getElementById("recoveredPointsSummary").innerText = `Recovered: ${recoveredPointsThisWeek}`;
+}
+
+function updateSummary(data) {
+  let weekly = data.weeklyTotal || 0;
+  let monthly = data.monthlyTotal || 0;
+  let chf = Math.floor((weekly >= 75 ? 5 : weekly / 15));
+  document.getElementById("weeklyTotal").innerText = `Weekly: ${weekly}`;
+  document.getElementById("monthlyTotal").innerText = `Monthly: ${monthly}`;
+  document.getElementById("moneyTotal").innerText = `CHF: ${chf}`;
+  updateBar(weekly);
+  // Visual warning at max points (week)
+  document.getElementById("maxWarning").style.display = (weekly >= 75) ? "inline-block" : "none";
+}
+
+function updateOverdueAlerts() {
+  let alertBox = document.getElementById("overdueAlerts");
+  alertBox.innerHTML = "";
+  if (showerOverdue) {
+    let span = document.createElement("div");
+    span.className = "alert";
+    span.innerText = "⚠️ Shower overdue! Not logged for 2 days.";
+    alertBox.appendChild(span);
+  }
+  if (bedtimeOverdue) {
+    let span = document.createElement("div");
+    span.className = "warning";
+    span.innerText = "⚠️ Bedtime rule missed! Mark as broken if not respected.";
+    alertBox.appendChild(span);
+  }
+}
+
 async function loadUser(user) {
   currentUser = user;
-  try {
-    const userRef = doc(db, "users", user);
-    const snapshot = await getDoc(userRef);
-
-    const userNameElem = document.getElementById("userName");
-    const currentPointsElem = document.getElementById("currentPoints");
-    const historyList = document.getElementById("history");
-    const userSection = document.getElementById("userSection");
-    const defaultMessage = document.getElementById("defaultMessage");
-
-    if (!userNameElem || !currentPointsElem || !historyList || !userSection || !defaultMessage) {
-      console.error("Missing one or more required HTML elements.");
-      return;
-    }
-
-    let data;
-    if (snapshot.exists()) {
-      data = snapshot.data();
-    } else {
-      data = {
-        points: 0,
-        history: [],
-        weeklyTotal: 0,
-        monthlyTotal: 0,
-        lastDaily: { date: todayStr, completed: {} }
-      };
-      await setDoc(userRef, data);
-    }
-
-    // Daily reset logic
-    if (!data.lastDaily || data.lastDaily.date !== todayStr) {
-      // New day: clear completed
-      data.lastDaily = { date: todayStr, completed: {} };
-      await updateDoc(userRef, { lastDaily: data.lastDaily });
-    }
-
-    userNameElem.innerText = `${user.charAt(0).toUpperCase() + user.slice(1)}'s Points`;
-    currentPointsElem.innerText = `${data.points || 0} Points`;
-
-    // Render checklist
-    dailyKeys.forEach(key => {
-      const cb = document.getElementById("daily-" + key);
-      if (cb) {
-        cb.checked = !!data.lastDaily.completed[key];
-        cb.disabled = !!data.lastDaily.completed[key]; // Disable if already done today
-      }
-    });
-
-    // Render history
-    historyList.innerHTML = "";
-    (data.history || []).slice().reverse().forEach(item => {
-      const li = document.createElement("li");
-      li.innerText = `${item.time} - ${item.points} Points (${item.reason})`;
-      historyList.appendChild(li);
-    });
-
-    userSection.style.display = "block";
-    defaultMessage.style.display = "none";
-    updateSummary(data);
-  } catch (error) {
-    console.error("Error loading user:", error);
-    alert("Failed to load user data. Check your internet connection.");
+  const userRef = doc(db, "users", user);
+  let snapshot = await getDoc(userRef);
+  let monday = formatDate(getMonday(new Date()));
+  let data;
+  if (snapshot.exists()) {
+    data = snapshot.data();
+  } else {
+    data = {
+      points: 0,
+      history: [],
+      weeklyTotal: 0,
+      monthlyTotal: 0,
+      lastWeekly: monday,
+      lostPointsThisWeek: 0,
+      recoveredPointsThisWeek: 0,
+      lastDaily: { date: todayStr, completed: {}, awarded: false, rulesBroken: {} },
+      lastShowerDate: todayStr,
+    };
+    await setDoc(userRef, data);
   }
-}
-
-// Update summary placeholders safely
-function updateSummary(data) {
-  const weeklyEl = document.getElementById("weeklyTotal");
-  const monthlyEl = document.getElementById("monthlyTotal");
-  const moneyEl = document.getElementById("moneyTotal");
-
-  if (weeklyEl) weeklyEl.innerText = `Weekly Points: ${data.weeklyTotal || 0}`;
-  if (monthlyEl) monthlyEl.innerText = `Monthly Points: ${data.monthlyTotal || 0}`;
-  if (moneyEl) moneyEl.innerText = `Money Equivalent: ${Math.floor((data.monthlyTotal || 0)/15)} CHF`;
-}
-
-// Central function to add points and update UI directly
-async function addPoints(user, points, reason) {
-  if (!user) return;
-  try {
-    const userRef = doc(db, "users", user);
-    const snapshot = await getDoc(userRef);
-    const data = snapshot.exists() ? snapshot.data() : { points: 0, history: [] };
-
-    const newPoints = (data.points || 0) + points;
-    const newHistoryItem = { time: new Date().toLocaleString(), points, reason };
-
-    // Update Firestore
+  // Weekly reset
+  if (data.lastWeekly !== monday) {
+    data.weeklyTotal = 0;
+    data.lostPointsThisWeek = 0;
+    data.recoveredPointsThisWeek = 0;
+    data.lastWeekly = monday;
     await updateDoc(userRef, {
-      points: newPoints,
-      history: arrayUnion(newHistoryItem)
+      weeklyTotal: 0,
+      lostPointsThisWeek: 0,
+      recoveredPointsThisWeek: 0,
+      lastWeekly: monday
     });
-
-    document.getElementById("currentPoints").innerText = `${newPoints} Points`;
-    const historyList = document.getElementById("history");
-    if (historyList) {
-      const li = document.createElement("li");
-      li.innerText = `${newHistoryItem.time} - ${newHistoryItem.points} Points (${newHistoryItem.reason})`;
-      historyList.insertBefore(li, historyList.firstChild);
-    }
-
-    // Optionally update summary
-    const weeklyTotal = (data.weeklyTotal || 0) + points;
-    const monthlyTotal = (data.monthlyTotal || 0) + points;
-    updateSummary({ weeklyTotal, monthlyTotal });
-  } catch (error) {
-    console.error("Error updating points:", error);
-    alert("Failed to update points. Check your internet connection.");
   }
-}
+  // Daily reset
+  if (!data.lastDaily || data.lastDaily.date !== todayStr) {
+    data.lastDaily = { date: todayStr, completed: {}, awarded: false, rulesBroken: {} };
+    await updateDoc(userRef, { lastDaily: data.lastDaily });
+  }
+  // Shower overdue check
+  lastShowerDate = data.lastShowerDate || todayStr;
+  let daysSinceShower = (new Date(todayStr) - new Date(lastShowerDate)) / (1000*3600*24);
+  showerOverdue = daysSinceShower >= 2;
+  // Bedtime overdue: if after 21:00 and not checked
+  let now = new Date();
+  bedtimeOverdue = (now.getHours() >= 21 && !data.lastDaily.completed.bedtime && !data.lastDaily.rulesBroken.bedtime);
 
-// --- Event Listeners ---
-document.addEventListener("DOMContentLoaded", () => {
-  // Daily checklist event listeners (use data-id for each)
+  // Load summary stats
+  todayAwarded = data.lastDaily.awarded ? 15 : 0;
+  todayLost = Object.keys(data.lastDaily.rulesBroken || {}).length;
+  todayNet = todayAwarded - todayLost;
+  awardedToday = !!data.lastDaily.awarded;
+  rulesBroken = data.lastDaily.rulesBroken || {};
+  lostPointsThisWeek = data.lostPointsThisWeek || 0;
+  recoveredPointsThisWeek = data.recoveredPointsThisWeek || 0;
+  updateDailySummary();
+  updateSummary(data);
+  updateRecoverySummary();
+  updateOverdueAlerts();
+
+  // User UI
+  document.getElementById("userName").innerText = `${user.charAt(0).toUpperCase() + user.slice(1)}'s Points`;
+  document.getElementById("currentPoints").innerText = `${data.points || 0} Points`;
+  document.querySelectorAll(".buttons button").forEach(btn => btn.classList.remove("selected"));
+  document.getElementById(user).classList.add("selected");
+
+  // Checklist
   dailyKeys.forEach(key => {
     const cb = document.getElementById("daily-" + key);
     if (cb) {
-      cb.addEventListener("change", async (e) => {
-        if (!currentUser) return;
-        // Only allow action if not already completed today
-        const userRef = doc(db, "users", currentUser);
-        const snapshot = await getDoc(userRef);
-        const data = snapshot.exists() ? snapshot.data() : { lastDaily: { date: todayStr, completed: {} } };
-        if (data.lastDaily.date !== todayStr) {
-          // Should not happen because loadUser resets, but just in case
-          data.lastDaily = { date: todayStr, completed: {} };
-          await updateDoc(userRef, { lastDaily: data.lastDaily });
-        }
-        if (data.lastDaily.completed[key]) {
-          cb.checked = true;
-          cb.disabled = true;
-          return;
-        }
-        // Award points and mark as completed
-        const points = parseInt(cb.dataset.points);
-        await addPoints(currentUser, points, dailyLabels[key]);
-        data.lastDaily.completed[key] = true;
-        await updateDoc(userRef, { lastDaily: data.lastDaily });
-        cb.disabled = true;
-      });
+      cb.checked = !!data.lastDaily.completed[key];
+      cb.disabled = true; // Mum uses minus buttons, disables checkboxes
+    }
+    const minusBtn = document.querySelector(`.minus-btn[data-key="${key}"]`);
+    if (minusBtn) {
+      minusBtn.disabled = !awardedToday || !!rulesBroken[key];
     }
   });
 
-  // Bonus buttons
+  // History
+  const historyList = document.getElementById("history");
+  historyList.innerHTML = "";
+  (data.history || []).slice().reverse().forEach(item => {
+    const li = document.createElement("li");
+    li.innerText = `${item.time} - ${item.points} Points (${item.reason})`;
+    historyList.appendChild(li);
+  });
+
+  document.getElementById("userSection").style.display = "block";
+  document.getElementById("defaultMessage").style.display = "none";
+}
+
+// Points logic + weekly/monthly/recovery
+async function addPoints(user, points, reason, opts={recovery:false}) {
+  const userRef = doc(db, "users", user);
+  let snapshot = await getDoc(userRef);
+  let data = snapshot.exists() ? snapshot.data() : { points: 0, history: [] };
+  let weeklyTotal = (data.weeklyTotal || 0);
+  let monthlyTotal = (data.monthlyTotal || 0);
+  let lostPointsThisWeek = (data.lostPointsThisWeek || 0);
+  let recoveredPointsThisWeek = (data.recoveredPointsThisWeek || 0);
+
+  // Weekly max cap
+  if (points > 0 && !opts.recovery) {
+    // Only count up to cap
+    if (weeklyTotal + points > 75) {
+      points = 75 - weeklyTotal;
+      if (points <= 0) points = 0;
+    }
+    weeklyTotal += points;
+    monthlyTotal += points;
+  }
+  // Recovery points logic
+  if (opts.recovery && points > 0) {
+    recoveredPointsThisWeek += points;
+    weeklyTotal += points; // Recovery points also add to weekly
+    monthlyTotal += points;
+  }
+  // Track lost points
+  if (opts.lost) {
+    lostPointsThisWeek += 1;
+    weeklyTotal -= 1;
+    monthlyTotal -= 1;
+    if (weeklyTotal < 0) weeklyTotal = 0;
+    if (monthlyTotal < 0) monthlyTotal = 0;
+  }
+  let newPoints = (data.points || 0) + points;
+  let newHistoryItem = { time: new Date().toLocaleString(), points, reason };
+  await updateDoc(userRef, {
+    points: newPoints,
+    weeklyTotal,
+    monthlyTotal,
+    lostPointsThisWeek,
+    recoveredPointsThisWeek,
+    history: arrayUnion(newHistoryItem)
+  });
+  // Update UI
+  document.getElementById("currentPoints").innerText = `${newPoints} Points`;
+  let historyList = document.getElementById("history");
+  if (historyList) {
+    let li = document.createElement("li");
+    li.innerText = `${newHistoryItem.time} - ${newHistoryItem.points} Points (${newHistoryItem.reason})`;
+    historyList.insertBefore(li, historyList.firstChild);
+  }
+  updateSummary({ weeklyTotal, monthlyTotal });
+  lostPointsThisWeek = lostPointsThisWeek;
+  recoveredPointsThisWeek = recoveredPointsThisWeek;
+  updateRecoverySummary();
+}
+
+// Award daily points
+document.addEventListener("DOMContentLoaded", () => {
+  // User selection
+  document.getElementById("dario").addEventListener("click", () => loadUser("dario"));
+  document.getElementById("linda").addEventListener("click", () => loadUser("linda"));
+
+  // Daily points button
+  const awardBtn = document.getElementById("awardDailyBtn");
+  if (awardBtn) {
+    awardBtn.addEventListener("click", async () => {
+      if (!currentUser || awardedToday) return;
+      todayAwarded = 15;
+      todayLost = 0;
+      todayNet = 15;
+      awardedToday = true;
+      rulesBroken = {};
+      updateDailySummary();
+      await addPoints(currentUser, 15, "Awarded daily points");
+      // Mark awarded in Firestore
+      let userRef = doc(db, "users", currentUser);
+      let snapshot = await getDoc(userRef);
+      let data = snapshot.exists() ? snapshot.data() : {};
+      data.lastDaily.awarded = true;
+      await updateDoc(userRef, { lastDaily: data.lastDaily });
+      // Disable daily checkboxes
+      dailyKeys.forEach(key => {
+        let cb = document.getElementById("daily-" + key);
+        if (cb) cb.disabled = true;
+      });
+      // Enable minus buttons
+      document.querySelectorAll(".minus-btn").forEach(btn => btn.disabled = false);
+    });
+  }
+
+  // Minus rule broken
+  document.querySelectorAll(".minus-btn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      if (!currentUser || !awardedToday) return;
+      const key = btn.dataset.key;
+      if (rulesBroken[key]) return;
+      todayLost += 1;
+      todayNet = todayAwarded - todayLost;
+      rulesBroken[key] = true;
+      updateDailySummary();
+      await addPoints(currentUser, -1, `Rule broken: ${dailyLabels[key]}`, {lost:true});
+      // Mark as broken in Firestore
+      let userRef = doc(db, "users", currentUser);
+      let snapshot = await getDoc(userRef);
+      let data = snapshot.exists() ? snapshot.data() : {};
+      data.lastDaily.rulesBroken[key] = true;
+      await updateDoc(userRef, { lastDaily: data.lastDaily, lostPointsThisWeek: (data.lostPointsThisWeek||0)+1 });
+      btn.disabled = true;
+    });
+    btn.disabled = true; // Start disabled
+  });
+
+  // Rewarded behaviors (recovery)
   document.querySelectorAll(".bonus-btn").forEach(btn => {
     btn.addEventListener("click", async () => {
       if (!currentUser) return;
       const points = parseInt(btn.dataset.points);
       const reason = btn.innerText.replace(/\(\+\d+\)/,'').trim();
-      await addPoints(currentUser, points, reason);
+      const isRecovery = btn.dataset.type === "recovery";
+      await addPoints(currentUser, points, reason, {recovery:isRecovery});
+      if (isRecovery && points > 0) {
+        let userRef = doc(db, "users", currentUser);
+        let snapshot = await getDoc(userRef);
+        let data = snapshot.exists() ? snapshot.data() : {};
+        await updateDoc(userRef, { recoveredPointsThisWeek: (data.recoveredPointsThisWeek||0)+points });
+        recoveredPointsThisWeek += points;
+        updateRecoverySummary();
+      }
     });
   });
 
@@ -207,11 +332,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // User selection buttons
-  document.getElementById("dario").addEventListener("click", () => loadUser("dario"));
-  document.getElementById("linda").addEventListener("click", () => loadUser("linda"));
-
-  // History collapsible
+  // Collapsible history
   const btn = document.getElementById("toggleHistoryBtn");
   const history = document.getElementById("history");
   if (btn && history) {
