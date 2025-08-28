@@ -113,7 +113,6 @@
           <button class="minus-btn" data-key="repeat">-1</button>
         </li>
       </ul>
-
       <h3>Rewarded Behaviors</h3>
       <div id="bonusButtons">
         <button class="bonus-btn" data-points="5" data-type="recovery">Set the table (+5)</button>
@@ -127,7 +126,6 @@
         <button class="bonus-btn danger-btn" data-points="-75">If grade below 4.5 (-75)</button>
         <button class="bonus-btn danger-btn" data-points="-75">If screen time rules not respected (-75)</button>
       </div>
-
       <h3>School</h3>
       <ul id="schoolChecklist">
         <li>
@@ -139,7 +137,6 @@
           All subjects ≥ 5 at month end
         </li>
       </ul>
-
       <button id="toggleHistoryBtn" class="collapse-btn" aria-expanded="true" aria-controls="history">Hide Points History</button>
       <h3 style="margin-top:8px;">Points History</h3>
       <ul id="history"></ul>
@@ -147,9 +144,7 @@
     </div>
     <p id="defaultMessage">Select a family member to view and update their points.</p>
   </div>
-
-  <div class="version">v3.2</div>
-
+  <div class="version">v3.1</div>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
     import { getFirestore } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
