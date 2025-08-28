@@ -18,9 +18,24 @@
     <div id="userSection" style="display:none;">
       <h2 id="userName"></h2>
       <h3 id="currentPoints">0 Points</h3>
-
-      <button id="awardDailyBtn" class="big-action-btn">Award Daily Points (+15)</button>
-      <h3>Daily Routine</h3>
+      <div id="pointsBar">
+        <span class="label">Weekly</span>
+        <div class="bar"><div class="fill" id="weeklyBarFill" style="width:0%;"></div></div>
+        <span id="weeklyBarLabel">0/75</span>
+      </div>
+      <div class="summary-row">
+        <span id="weeklyTotal">Weekly: 0</span> |
+        <span id="monthlyTotal">Monthly: 0</span> |
+        <span id="moneyTotal">CHF: 0</span>
+        <span id="maxWarning" class="badge" style="display:none;">Max points reached!</span>
+      </div>
+      <div class="summary-row">
+        <span id="lostPointsSummary">Lost points this week: 0</span> |
+        <span id="recoveredPointsSummary">Recovered: 0</span>
+      </div>
+      <div id="overdueAlerts"></div>
+      <h3 style="margin-top:18px;">Daily Routine</h3>
+      <button id="awardDailyBtn" class="award-btn">Award Daily Points (+15)</button>
       <div class="summary-row" id="dailySummaryRow">
         <span id="todayAwarded">Awarded: 0</span> |
         <span id="todayLost">Lost: 0</span> |
@@ -30,7 +45,7 @@
         <li>
           <input type="checkbox" class="check-item" id="daily-dressed" data-points="1">
           Getting dressed in the morning
-          <button class="minus-btn" data-key="dressed" title="-1">-1</button>
+          <button class="minus-btn" data-key="dressed" title="Mark rule broken">-1</button>
         </li>
         <li>
           <input type="checkbox" class="check-item" id="daily-bed" data-points="1">
@@ -109,30 +124,32 @@
         <button class="bonus-btn" data-points="15" data-type="recovery">Order drawers/closets (+15)</button>
         <button class="bonus-btn" data-points="15" data-type="recovery">General cleaning (+15)</button>
         <button class="bonus-btn" data-points="15">To have a 6 (+15)</button>
-        <button class="bonus-btn danger" data-points="-75">If grade below 4.5 (-75)</button>
-        <button class="bonus-btn danger" data-points="-75">If screen time rules not respected (-75)</button>
+        <button class="bonus-btn danger-btn" data-points="-75">If grade below 4.5 (-75)</button>
+        <button class="bonus-btn danger-btn" data-points="-75">If screen time rules not respected (-75)</button>
       </div>
 
       <h3>School</h3>
       <ul id="schoolChecklist">
-        <li><input type="checkbox" class="school-item" data-points="75"> Monthly average ≥ 5</li>
-        <li><input type="checkbox" class="school-item" data-points="150"> All subjects ≥ 5 at month end</li>
+        <li>
+          <input type="checkbox" class="school-item" data-points="75">
+          Monthly average ≥ 5
+        </li>
+        <li>
+          <input type="checkbox" class="school-item" data-points="150">
+          All subjects ≥ 5 at month end
+        </li>
       </ul>
-
-      <h3>Summary</h3>
-      <p id="weeklyTotal">Weekly Points: 0</p>
-      <p id="monthlyTotal">Monthly Points: 0</p>
-      <p id="moneyTotal">Money Equivalent: 0 CHF</p>
 
       <button id="toggleHistoryBtn" class="collapse-btn" aria-expanded="true" aria-controls="history">Hide Points History</button>
       <h3 style="margin-top:8px;">Points History</h3>
       <ul id="history"></ul>
-
       <button id="resetBtn" class="reset-btn">Reset All</button>
-      <div class="version-badge">v3.1</div>
     </div>
     <p id="defaultMessage">Select a family member to view and update their points.</p>
   </div>
+
+  <div class="version">v3.1</div>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
     import { getFirestore } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
