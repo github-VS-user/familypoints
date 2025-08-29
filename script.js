@@ -61,6 +61,16 @@ function updateDailySummary() {
   document.getElementById("todayNet").innerText = `Net: ${todayNet}`;
 }
 
+async function updateStickyBarContent() {
+  const userSection = document.getElementById("userSection");
+  const pointsBar = userSection ? userSection.querySelector("#pointsBar") : null;
+  if (stickyBarWrapper && pointsBar) {
+    stickyBarWrapper.innerHTML = "";
+    // Deep clone to preserve current fill/label state
+    stickyBarWrapper.appendChild(pointsBar.cloneNode(true));
+  }
+}
+
 function updateBar(weekly) {
   const fill = document.getElementById("weeklyBarFill");
   const label = document.getElementById("weeklyBarLabel");
@@ -75,6 +85,8 @@ function updateBar(weekly) {
     fill.style.background = "linear-gradient(90deg, #74ABE2, #5563DE)";
     label.style.color = "";
   }
+  // Update sticky bar content after changing the bar
+  updateStickyBarContent();
 }
 
 function updateRecoverySummary() {
@@ -254,8 +266,35 @@ async function addPoints(user, points, reason, opts={recovery:false}) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("dario").addEventListener("click", () => loadUser("dario"));
-  document.getElementById("linda").addEventListener("click", () => loadUser("linda"));
+  const loadingOverlay = document.getElementById("loadingOverlay");
+
+  function showLoading() {
+    if (loadingOverlay) loadingOverlay.style.display = "flex";
+    const delay = 1600; // 1.6 seconds
+    return new Promise(resolve => setTimeout(() => {
+      if (loadingOverlay) loadingOverlay.style.display = "none";
+      resolve();
+    }, delay));
+  }
+
+  document.getElementById("dario").addEventListener("click", async () => {
+    await showLoading();
+    loadUser("dario");
+  });
+  document.getElementById("linda").addEventListener("click", async () => {
+    await showLoading();
+    loadUser("linda");
+  });
+
+  // Intercept rules button click for loading effect
+  const rulesBtn = document.getElementById("rulesBtn");
+  if (rulesBtn) {
+    rulesBtn.addEventListener("click", async (e) => {
+      e.preventDefault();
+      await showLoading();
+      window.location.href = "rules.html";
+    });
+  }
 
   const awardBtn = document.getElementById("awardDailyBtn");
   if (awardBtn) {
@@ -359,4 +398,49 @@ document.addEventListener("DOMContentLoaded", () => {
       loadUser(currentUser);
     });
   }
+
+  // Sticky weekly bar logic
+  const stickyBarWrapper = document.getElementById("stickyBarWrapper");
+  let stickyActive = false;
+
+  function handleStickyBar() {
+    const userSection = document.getElementById("userSection");
+    const pointsBar = userSection ? userSection.querySelector("#pointsBar") : null;
+    if (!stickyBarWrapper || !pointsBar) return;
+    const rect = pointsBar.getBoundingClientRect();
+    if (rect.top < 0) {
+      if (!stickyActive) {
+        stickyBarWrapper.classList.add("sticky");
+        stickyBarWrapper.style.display = "flex";
+        stickyActive = true;
+      }
+    } else {
+      if (stickyActive) {
+        stickyBarWrapper.classList.remove("sticky");
+        stickyBarWrapper.style.display = "none";
+        stickyActive = false;
+      }
+    }
+  }
+
+  async function updateStickyBarContent() {
+    const userSection = document.getElementById("userSection");
+    const pointsBar = userSection ? userSection.querySelector("#pointsBar") : null;
+    if (stickyBarWrapper && pointsBar) {
+      stickyBarWrapper.innerHTML = "";
+      // Deep clone to preserve current fill/label state
+      stickyBarWrapper.appendChild(pointsBar.cloneNode(true));
+    }
+  }
+
+  const origLoadUser = loadUser;
+  loadUser = async function(user) {
+    await origLoadUser(user);
+    updateStickyBarContent();
+    handleStickyBar();
+  };
+
+  // Call these after everything is defined, if you want to initialize sticky bar on page load:
+  updateStickyBarContent();
+  handleStickyBar();
 });

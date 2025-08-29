@@ -335,9 +335,71 @@ h3 {
     font-weight: 700;
 }
 
+/* Sticky Bar Styles */
+#stickyBarWrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: #fff;
+    box-shadow: 0 2px 12px rgba(85,99,222,0.13);
+    padding: 12px 0 12px 0;
+    margin: 0;
+    border-radius: 0 0 12px 12px;
+    width: 100vw;
+    max-width: none;
+    display: none;
+    justify-content: center;
+    z-index: 999;
+    transition: top 0.2s, box-shadow 0.2s;
+}
+#stickyBarWrapper.sticky {
+    display: flex;
+}
+#stickyBarWrapper #pointsBar {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Loading Overlay Styles */
+#loadingOverlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.7); /* fade to black */
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Loader Animation */
+.loader {
+  width: 220px;
+  height: 38px;
+  border-radius: 38px;
+  background:
+   repeating-linear-gradient(135deg,#f03355 0 18px,#ffa516 0 36px) 0/0%   no-repeat,
+   repeating-linear-gradient(135deg,#ddd    0 18px,#eee    0 36px) 0/100%;
+  animation: l3 2s infinite;
+}
+@keyframes l3 {
+    100% {background-size:100%}
+}
+
 /* Mobile responsive */
 @media (max-width: 700px) {
     #content {
+        padding: 12px;
+        max-width: 97vw;
+    }
+    .bonus-btn {
+        padding: 8px 12px;
+        font-size: 0.95rem;
+    }
+    .summary-row { font-size: 0.95rem; padding: 6px 4px;}
+    ul { padding-left: 7px;}
+    h1 { font-size: 1.3rem;}
+}
         padding: 12px;
         max-width: 97vw;
     }
