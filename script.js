@@ -43,6 +43,14 @@ function getMonday(d) {
   var day = d.getDay(), diff = d.getDate() - day + (day === 0 ? -6:1);
   return new Date(d.setDate(diff));
 }
+function getFriday(d) {
+  d = new Date(d);
+  var day = d.getDay();
+  var diff = d.getDate() + (5 - day); // 5 = Friday
+  let friday = new Date(d.setDate(diff));
+  friday.setHours(23, 59, 59, 999);
+  return friday;
+}
 function formatDate(date) {
   return date.toISOString().slice(0,10);
 }
@@ -57,9 +65,16 @@ function updateBar(weekly) {
   const fill = document.getElementById("weeklyBarFill");
   const label = document.getElementById("weeklyBarLabel");
   const max = 75;
-  let pct = Math.min(weekly / max, 1) * 100;
+  let pct = weekly <= 0 ? 0 : Math.min(weekly / max, 1) * 100;
   fill.style.width = `${pct}%`;
   label.innerText = `${weekly}/${max}`;
+  if (weekly < 0) {
+    fill.style.background = "#E74C3C";
+    label.style.color = "#E74C3C";
+  } else {
+    fill.style.background = "linear-gradient(90deg, #74ABE2, #5563DE)";
+    label.style.color = "";
+  }
 }
 
 function updateRecoverySummary() {
@@ -100,6 +115,7 @@ async function loadUser(user) {
   const userRef = doc(db, "users", user);
   let snapshot = await getDoc(userRef);
   let monday = formatDate(getMonday(new Date()));
+  let friday = formatDate(getFriday(new Date()));
   let data;
   if (snapshot.exists()) {
     data = snapshot.data();
@@ -117,16 +133,20 @@ async function loadUser(user) {
     };
     await setDoc(userRef, data);
   }
-  if (data.lastWeekly !== monday) {
+  // Weekly reset: if today is after last Friday, reset weekly points
+  let now = new Date();
+  let lastFriday = new Date(data.lastWeekly || friday);
+  let thisFriday = getFriday(now);
+  if (now > thisFriday) {
     data.weeklyTotal = 0;
     data.lostPointsThisWeek = 0;
     data.recoveredPointsThisWeek = 0;
-    data.lastWeekly = monday;
+    data.lastWeekly = formatDate(thisFriday);
     await updateDoc(userRef, {
       weeklyTotal: 0,
       lostPointsThisWeek: 0,
       recoveredPointsThisWeek: 0,
-      lastWeekly: monday
+      lastWeekly: formatDate(thisFriday)
     });
   }
   if (!data.lastDaily || data.lastDaily.date !== todayStr) {
@@ -136,7 +156,6 @@ async function loadUser(user) {
   lastShowerDate = data.lastShowerDate || todayStr;
   let daysSinceShower = (new Date(todayStr) - new Date(lastShowerDate)) / (1000*3600*24);
   showerOverdue = daysSinceShower >= 2;
-  let now = new Date();
   bedtimeOverdue = (now.getHours() >= 21 && !data.lastDaily.completed.bedtime && !data.lastDaily.rulesBroken.bedtime);
 
   todayAwarded = data.lastDaily.awarded ? 15 : 0;
@@ -152,7 +171,6 @@ async function loadUser(user) {
   updateOverdueAlerts();
 
   document.getElementById("userName").innerText = `${user.charAt(0).toUpperCase() + user.slice(1)}'s Points`;
-  document.getElementById("currentPoints").innerText = `${data.points || 0} Points`;
   document.querySelectorAll(".buttons button").forEach(btn => btn.classList.remove("selected"));
   document.getElementById(user).classList.add("selected");
 
@@ -189,26 +207,30 @@ async function addPoints(user, points, reason, opts={recovery:false}) {
   let lostPointsThisWeek = (data.lostPointsThisWeek || 0);
   let recoveredPointsThisWeek = (data.recoveredPointsThisWeek || 0);
 
-  if (points > 0 && !opts.recovery) {
+  // Only subtract from weekly for large negative actions (like -75)
+  if (points < 0 && Math.abs(points) >= 75) {
+    weeklyTotal += points;
+    if (weeklyTotal < 0) weeklyTotal = 0;
+    // monthlyTotal unchanged
+  } else if (points > 0 && !opts.recovery) {
     if (weeklyTotal + points > 75) {
       points = 75 - weeklyTotal;
       if (points <= 0) points = 0;
     }
     weeklyTotal += points;
     monthlyTotal += points;
-  }
-  if (opts.recovery && points > 0) {
+  } else if (opts.recovery && points > 0) {
     recoveredPointsThisWeek += points;
     weeklyTotal += points;
     monthlyTotal += points;
-  }
-  if (opts.lost) {
+  } else if (opts.lost) {
     lostPointsThisWeek += 1;
     weeklyTotal -= 1;
     monthlyTotal -= 1;
     if (weeklyTotal < 0) weeklyTotal = 0;
     if (monthlyTotal < 0) monthlyTotal = 0;
   }
+
   let newPoints = (data.points || 0) + points;
   let newHistoryItem = { time: new Date().toLocaleString(), points, reason };
   await updateDoc(userRef, {
@@ -219,7 +241,6 @@ async function addPoints(user, points, reason, opts={recovery:false}) {
     recoveredPointsThisWeek,
     history: arrayUnion(newHistoryItem)
   });
-  document.getElementById("currentPoints").innerText = `${newPoints} Points`;
   let historyList = document.getElementById("history");
   if (historyList) {
     let li = document.createElement("li");
